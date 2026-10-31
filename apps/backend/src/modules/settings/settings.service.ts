@@ -41,16 +41,35 @@ export class SettingsService {
     });
   }
 
+  private getDbPath(): string {
+    const candidates = [
+      path.join(process.cwd(), 'prisma', 'dev.db'),
+      path.join(process.cwd(), 'dev.db'),
+      path.join(__dirname, '..', '..', '..', 'prisma', 'dev.db'),
+      path.join(__dirname, '..', '..', '..', 'dev.db'),
+      path.join(__dirname, '..', '..', 'prisma', 'dev.db'),
+      'd:\\ERP_BanHang\\apps\\backend\\prisma\\dev.db',
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p;
+    }
+    return candidates[0];
+  }
+
+  private getBackupDir(): string {
+    const dir = path.join(process.cwd(), 'backups');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return dir;
+  }
+
   /**
    * Tạo bản sao lưu CSDL SQLite (.db) kèm dấu thời gian
    */
   async createDatabaseBackup() {
-    const dbSource = path.join(__dirname, '..', '..', '..', 'dev.db');
-    const backupDir = path.join(__dirname, '..', '..', '..', 'backups');
-
-    if (!fs.existsSync(backupDir)) {
-      fs.mkdirSync(backupDir, { recursive: true });
-    }
+    const dbSource = this.getDbPath();
+    const backupDir = this.getBackupDir();
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFileName = `erp_fmcg_backup_${timestamp}.db`;
@@ -66,11 +85,11 @@ export class SettingsService {
         fileName: backupFileName,
         filePath: destPath,
         sizeBytes: stats.size,
-        sizeFormatted: `${(stats.size / (1024 * 1024)).toFixed(2)} MB`,
+        sizeFormatted: `${(stats.size / 1024).toFixed(1)} KB`,
         createdAt: new Date(),
       };
     } else {
-      throw new NotFoundException('Không tìm thấy tệp CSDL dev.db để sao lưu');
+      throw new NotFoundException(`Không tìm thấy tệp CSDL dev.db tại ${dbSource} để sao lưu`);
     }
   }
 
@@ -78,7 +97,7 @@ export class SettingsService {
    * Danh sách các tệp sao lưu có sẵn trong máy
    */
   async listBackups() {
-    const backupDir = path.join(__dirname, '..', '..', '..', 'backups');
+    const backupDir = this.getBackupDir();
     if (!fs.existsSync(backupDir)) return [];
 
     const files = fs.readdirSync(backupDir).filter((f) => f.endsWith('.db'));
