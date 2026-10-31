@@ -15,19 +15,19 @@ cd /d "%ROOT_DIR%"
 
 :: Kiem tra neu dist cua backend chua co thi build
 if not exist "%ROOT_DIR%apps\backend\dist\src\main.js" (
-    echo [1/3] Bien dich Backend Engine...
+    echo [1/3] Bien dich Backend Engine noi bo...
     cd /d "%ROOT_DIR%apps\backend"
     call npm run build
 )
 
 :: Kiem tra neu dist cua web-admin chua co thi build
 if not exist "%ROOT_DIR%apps\web-admin\dist\index.html" (
-    echo [2/3] Bien dich Giao dien Web Admin...
+    echo [2/3] Bien dich Giao dien Desktop App...
     cd /d "%ROOT_DIR%apps\web-admin"
     call npm run build
 )
 
 echo [3/3] Dang mo Cua So Desktop ERP FMCG...
 cd /d "%ROOT_DIR%apps\web-admin"
-call npx electron .
+start "" npx electron .
 exit

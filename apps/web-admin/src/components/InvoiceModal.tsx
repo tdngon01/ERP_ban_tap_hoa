@@ -292,3 +292,4 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, onClose }) =>
     </div>
   );
 };
+

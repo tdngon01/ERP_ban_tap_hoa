@@ -91,9 +91,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
       <div className="p-4 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400">
         <div className="flex items-center justify-between mb-1">
           <span className="font-medium text-slate-300">NPP An Phát</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="flex items-center space-x-1.5 text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Desktop Offline</span>
+          </span>
         </div>
-        <p className="text-[11px] text-slate-500">PostgreSQL / SQLite • Google Sheets Sync</p>
+        <p className="text-[11px] text-slate-500">SQLite Nội Bộ • 0đ Chi Phí Máy Chủ</p>
       </div>
     </aside>
   );

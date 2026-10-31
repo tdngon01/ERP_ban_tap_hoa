@@ -71,12 +71,17 @@ function startBackend() {
 
   console.log('🚀 Khởi chạy Backend ERP Engine nội bộ...');
 
+  const childEnv = { ...process.env };
+  delete childEnv.ELECTRON_RUN_AS_NODE;
+  childEnv.PORT = '5000';
+
   if (fs.existsSync(compiledMain)) {
     backendProcess = spawn('node', ['dist/src/main.js'], {
       cwd: backendDir,
       shell: true,
       stdio: 'ignore',
       detached: false,
+      env: childEnv,
     });
   } else {
     backendProcess = spawn('npm.cmd', ['run', 'start:dev'], {
@@ -84,6 +89,7 @@ function startBackend() {
       shell: true,
       stdio: 'ignore',
       detached: false,
+      env: childEnv,
     });
   }
 
@@ -286,7 +292,11 @@ app.whenReady().then(() => {
 function cleanupBackend() {
   if (backendProcess) {
     try {
-      backendProcess.kill();
+      if (process.platform === 'win32' && backendProcess.pid) {
+        spawn('taskkill', ['/pid', backendProcess.pid.toString(), '/T', '/F'], { windowsHide: true });
+      } else {
+        backendProcess.kill();
+      }
     } catch (e) {}
     backendProcess = null;
   }

@@ -8,11 +8,11 @@ echo =====================================================================
 echo.
 echo Dang tao bieu tuong tren Desktop...
 
-powershell -Command "$ws = New-Object -ComObject WScript.Shell; $desktopPath = [Environment]::GetFolderPath('Desktop'); $s = $ws.CreateShortcut($desktopPath + '\ERP Banh Keo FMCG.lnk'); $s.TargetPath = '%~dp0Chay_App_Desktop.bat'; $s.WorkingDirectory = '%~dp0'; $s.IconLocation = '%~dp0apps\web-admin\electron\icon.png'; $s.Description = 'He Thong ERP & DMS Banh Keo FMCG'; $s.Save()"
+powershell -ExecutionPolicy Bypass -File "%~dp0Tao_Shortcut.ps1"
 
 echo.
 echo [x] DA TAO THANH CONG!
 echo Tu bay gio ban co the mo phan mem ngay tu man hinh Desktop cua may tinh.
+echo Khi mo se KHONG con cua so console den nua ma vao thang app Desktop.
 echo.
 pause
-

@@ -260,3 +260,4 @@ export const PickingListPage: React.FC = () => {
     </div>
   );
 };
+

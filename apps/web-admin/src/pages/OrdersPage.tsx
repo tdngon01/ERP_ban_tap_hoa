@@ -83,7 +83,7 @@ export const OrdersPage: React.FC<{ onNavigateToQr?: (outletId: string, orderId:
         salesRepName,
         orderType,
         items: orderItems,
-        notes: 'Đơn tạo từ Web Quản Trị ERP',
+        notes: 'Đơn tạo từ Desktop App ERP FMCG',
       });
       alert(res.message);
       setShowCreateModal(false);
