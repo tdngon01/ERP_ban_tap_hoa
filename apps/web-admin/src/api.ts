@@ -30,6 +30,7 @@ export const getPickingList = (status?: string) =>
 export const getOutlets = (routeId?: string, search?: string) => 
   api.get('/outlets', { params: { routeId, search } }).then(r => r.data);
 export const createOutlet = (data: any) => api.post('/outlets', data).then(r => r.data);
+export const updateOutlet = (id: string, data: any) => api.put(`/outlets/${id}`, data).then(r => r.data);
 
 // Routes & MCP
 export const getRoutes = () => api.get('/routes').then(r => r.data);

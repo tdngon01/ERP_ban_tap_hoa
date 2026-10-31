@@ -13,3 +13,4 @@ $Shortcut.Description = "He Thong ERP & DMS Banh Keo FMCG (Desktop App)"
 $Shortcut.Save()
 
 Write-Host "Da tao loi tat Desktop thanh cong tai: $ShortcutPath" -ForegroundColor Green
+

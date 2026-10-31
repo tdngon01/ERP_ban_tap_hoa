@@ -311,8 +311,16 @@ export const MobileSfaSimulator: React.FC = () => {
                       <div className="text-slate-500 font-medium">Tiệm tạp hóa:</div>
                       <div className="font-bold text-slate-900">{selectedOutlet?.name}</div>
                       <div className="text-slate-500">{selectedOutlet?.address}</div>
-                      <div className="text-[11px] font-mono text-slate-400">
-                        GPS Chuẩn: {selectedOutlet?.latitude}, {selectedOutlet?.longitude}
+                      <div className="text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                        <span>GPS: {selectedOutlet?.latitude}, {selectedOutlet?.longitude}</span>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${selectedOutlet?.latitude},${selectedOutlet?.longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 hover:underline font-bold font-sans flex items-center space-x-0.5"
+                        >
+                          <span>Chỉ đường GG Map</span>
+                        </a>
                       </div>
                     </div>
 
