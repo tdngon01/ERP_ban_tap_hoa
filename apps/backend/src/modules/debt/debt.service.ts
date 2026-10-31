@@ -86,6 +86,16 @@ export class DebtService {
     });
     if (!outlet) throw new NotFoundException('Không tìm thấy điểm bán');
 
+    // Lấy thông tin tài khoản ngân hàng từ Cấu hình Hệ Thống của NPP
+    const setting = await this.prisma.systemSetting.findUnique({
+      where: { id: 'default' },
+    });
+
+    const bankBin = setting?.bankBin || this.bankBin;
+    const accountNo = setting?.bankAccountNo || this.accountNo;
+    const accountName = setting?.bankAccountName || this.accountName;
+    const bankName = setting?.bankName || 'MBBank (Ngân hàng Quân Đội)';
+
     let addInfo = data.description;
     if (!addInfo) {
       if (data.orderId) {
@@ -106,16 +116,16 @@ export class DebtService {
       .trim()
       .replace(/\s+/g, '%20');
 
-    const qrUrl = `https://img.vietqr.io/image/${this.bankBin}-${this.accountNo}-compact2.png?amount=${Math.round(
+    const qrUrl = `https://img.vietqr.io/image/${bankBin}-${accountNo}-compact2.png?amount=${Math.round(
       data.amount,
-    )}&addInfo=${sanitizedInfo}&accountName=${encodeURIComponent(this.accountName)}`;
+    )}&addInfo=${sanitizedInfo}&accountName=${encodeURIComponent(accountName)}`;
 
     return {
       success: true,
-      bankBin: this.bankBin,
-      bankName: 'MBBank (Ngân hàng Quân Đội)',
-      accountNo: this.accountNo,
-      accountName: this.accountName,
+      bankBin,
+      bankName,
+      accountNo,
+      accountName,
       amount: data.amount,
       content: decodeURIComponent(sanitizedInfo.replace(/%20/g, ' ')),
       qrImageUrl: qrUrl,

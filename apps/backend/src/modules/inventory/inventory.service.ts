@@ -184,5 +184,65 @@ export class InventoryService {
 
     return lot;
   }
+
+  /**
+   * Bảng kê Soạn hàng Tổng hợp (Picking List) cho Thủ Kho & Xe Tải Giao Hàng
+   */
+  async getPickingList(orderStatus = 'CONFIRMED') {
+    const orders = await this.prisma.salesOrder.findMany({
+      where: {
+        status: orderStatus,
+      },
+      include: {
+        outlet: true,
+        items: {
+          include: { product: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const summaryMap = new Map<string, {
+      productId: string;
+      productCode: string;
+      productName: string;
+      uomName: string;
+      totalQty: number;
+      allocatedBatch: string;
+      outletBreakdown: Array<{ orderCode: string; outletName: string; quantity: number }>;
+    }>();
+
+    for (const ord of orders) {
+      for (const item of ord.items) {
+        const key = `${item.productId}_${item.uomName}_${item.allocatedBatch || 'DEFAULT'}`;
+        if (!summaryMap.has(key)) {
+          summaryMap.set(key, {
+            productId: item.productId,
+            productCode: item.product.code,
+            productName: item.product.name,
+            uomName: item.uomName,
+            totalQty: 0,
+            allocatedBatch: item.allocatedBatch || 'Lô Tự Động',
+            outletBreakdown: [],
+          });
+        }
+
+        const entry = summaryMap.get(key)!;
+        entry.totalQty += item.quantity;
+        entry.outletBreakdown.push({
+          orderCode: ord.orderCode,
+          outletName: ord.outlet.name,
+          quantity: item.quantity,
+        });
+      }
+    }
+
+    return {
+      totalOrdersCount: orders.length,
+      orders,
+      pickingItems: Array.from(summaryMap.values()),
+    };
+  }
 }
+
 

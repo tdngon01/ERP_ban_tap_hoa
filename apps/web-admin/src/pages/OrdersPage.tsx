@@ -9,14 +9,17 @@ import {
   Clock,
   QrCode,
   AlertCircle,
+  Printer,
 } from 'lucide-react';
 import { getOrders, getPromotions, createOrder, getOutlets, getProducts } from '../api';
+import { InvoiceModal } from '../components/InvoiceModal';
 
 export const OrdersPage: React.FC<{ onNavigateToQr?: (outletId: string, orderId: string, amount: number) => void }> = ({ onNavigateToQr }) => {
   const [orders, setOrders] = useState<any[]>([]);
   const [promotions, setPromotions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any>(null);
 
   // Form tạo đơn mới
   const [outlets, setOutlets] = useState<any[]>([]);
@@ -236,13 +239,22 @@ export const OrdersPage: React.FC<{ onNavigateToQr?: (outletId: string, orderId:
                   </span>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
+                <div className="flex items-center space-x-2">
+                  <div className="text-right mr-2">
                     <span className="text-xs text-slate-500 mr-2">Tổng thanh toán:</span>
                     <span className="text-lg font-extrabold text-amber-700 font-mono">
                       {order.totalAmount.toLocaleString('vi-VN')} đ
                     </span>
                   </div>
+
+                  <button
+                    onClick={() => setSelectedOrderForInvoice(order)}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold flex items-center space-x-1 shadow-sm"
+                    title="In Phiếu Giao Hàng & Hóa Đơn kèm mã VietQR"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-amber-400" />
+                    <span>In Phiếu Giao Hàng</span>
+                  </button>
 
                   {order.paymentStatus !== 'PAID' && onNavigateToQr && (
                     <button
@@ -403,6 +415,14 @@ export const OrdersPage: React.FC<{ onNavigateToQr?: (outletId: string, orderId:
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal In Hóa Đơn Kiêm Phiếu Giao Hàng */}
+      {selectedOrderForInvoice && (
+        <InvoiceModal
+          order={selectedOrderForInvoice}
+          onClose={() => setSelectedOrderForInvoice(null)}
+        />
       )}
     </div>
   );

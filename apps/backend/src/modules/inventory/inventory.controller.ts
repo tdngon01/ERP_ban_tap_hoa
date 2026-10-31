@@ -33,5 +33,10 @@ export class InventoryController {
   async inboundLot(@Body() body: any) {
     return this.inventoryService.createInboundLot(body);
   }
+
+  @Get('picking-list')
+  async getPickingList(@Query('status') status?: string) {
+    return this.inventoryService.getPickingList(status);
+  }
 }
 

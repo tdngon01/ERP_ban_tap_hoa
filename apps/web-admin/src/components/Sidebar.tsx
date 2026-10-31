@@ -11,6 +11,8 @@ import {
   Smartphone,
   ChevronRight,
   Sparkles,
+  ClipboardList,
+  Settings,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -23,11 +25,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     { id: 'dashboard', label: 'Tổng Quan & KPI', icon: LayoutDashboard, badge: 'Live' },
     { id: 'products', label: 'Bánh Kẹo & Đa ĐVT', icon: Package },
     { id: 'inventory', label: 'Kho & Lô HSD (FEFO)', icon: Layers, highlight: true },
+    { id: 'picking-list', label: 'Soạn Hàng Xe Tải', icon: ClipboardList, badge: 'Mới' },
     { id: 'outlets', label: 'Điểm Bán Tạp Hóa', icon: Store },
     { id: 'routes', label: 'Tuyến Bán Hàng (MCP)', icon: MapPin },
     { id: 'orders', label: 'Đơn Hàng & Khuyến Mãi', icon: ShoppingCart },
     { id: 'debt', label: 'Công Nợ & VietQR', icon: QrCode },
     { id: 'google-sheets', label: 'Đồng Bộ Google Sheets', icon: FileSpreadsheet, badge: 'API' },
+    { id: 'settings', label: 'Cài Đặt & Sao Lưu DB', icon: Settings },
     { id: 'mobile-sfa', label: 'Giả Lập Mobile Sale SFA', icon: Smartphone, special: true },
   ];
 

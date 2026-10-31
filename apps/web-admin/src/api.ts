@@ -23,6 +23,8 @@ export const getInventoryLots = (warehouseId?: string, fefoFilter?: string) =>
 export const recommendFefo = (productId: string, requiredBaseQty: number, warehouseId?: string) => 
   api.post('/inventory/fefo/recommend', { productId, requiredBaseQty, warehouseId }).then(r => r.data);
 export const createInboundLot = (data: any) => api.post('/inventory/inbound', data).then(r => r.data);
+export const getPickingList = (status?: string) => 
+  api.get('/inventory/picking-list', { params: { status } }).then(r => r.data);
 
 // Outlets
 export const getOutlets = (routeId?: string, search?: string) => 
@@ -61,4 +63,12 @@ export const syncOutletsFromSheets = (spreadsheetId?: string) =>
   api.post('/google-sheets/sync/outlets', { spreadsheetId }).then(r => r.data);
 export const exportOrdersToSheets = () => api.get('/google-sheets/export/orders').then(r => r.data);
 export const exportInventoryToSheets = () => api.get('/google-sheets/export/inventory').then(r => r.data);
+
+// System Settings & Database Backup
+export const getSystemSettings = () => api.get('/settings').then(r => r.data);
+export const updateSystemSettings = (data: any) => api.post('/settings', data).then(r => r.data);
+export const createBackup = () => api.post('/settings/backup').then(r => r.data);
+export const getBackups = () => api.get('/settings/backups').then(r => r.data);
+export const getCsvExportUrl = (type: 'orders' | 'inventory' | 'debt') => `${API_BASE}/settings/export/csv?type=${type}`;
+
 

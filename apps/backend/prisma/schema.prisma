@@ -252,3 +252,20 @@ model GoogleSheetsConfig {
   updatedAt          DateTime @updatedAt
 }
 
+// 14. Cấu hình Doanh nghiệp & Thanh toán NPP
+model SystemSetting {
+  id              String   @id @default("default")
+  distributorName String   @default("NHÀ PHÂN PHỐI BÁNH KẸO AN PHÁT")
+  phone           String   @default("0908.123.456 - 028.3888.9999")
+  address         String   @default("Số 150 Đường Song Hành, TP. Thủ Đức, TP. Hồ Chí Minh")
+  taxCode         String?  @default("0312345678")
+  bankName        String   @default("MBBank (Ngân Hàng Quân Đội)")
+  bankBin         String   @default("970422")
+  bankAccountNo   String   @default("0988889999")
+  bankAccountName String   @default("NPP BANH KEO AN PHAT")
+  autoBackupDays  Int      @default(1)
+  invoiceNotes    String?  @default("Cảm ơn Quý khách! Vui lòng kiểm tra kỹ số lượng, hạn sử dụng bánh kẹo và quét mã QR thanh toán.")
+  updatedAt       DateTime @updatedAt
+}
+
+
