@@ -4,7 +4,7 @@
   "description": "Core ERP & DMS Backend API cho Phân phối Bánh kẹo (NestJS + Prisma + Google Sheets API)",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "start:dev": "tsx watch src/main.ts",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
