@@ -24,6 +24,8 @@ dev.db-journal
 
 # Tools & portable binaries
 tools/
+release/
+*.exe
 
 # OS and Editor files
 .DS_Store

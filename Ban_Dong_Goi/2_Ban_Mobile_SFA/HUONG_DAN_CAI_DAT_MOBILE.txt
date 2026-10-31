@@ -1,0 +1,49 @@
+================================================================================
+   HƯỚNG DẪN SỬ DỤNG VÀ ĐÓNG GÓI BẢN MOBILE (SFA / DMS BÁNH KẸO FMCG)
+   Ứng dụng dành cho Nhân viên Bán hàng thị trường & Chở hàng theo xe (Van Sales)
+================================================================================
+
+Hệ thống cung cấp 2 giải pháp sử dụng trên điện thoại di động:
+
+--------------------------------------------------------------------------------
+CÁCH 1: BIÊN DỊCH RA TỆP CÀI ĐẶT ANDROID (FILE .APK) TỪ NGUỒN FLUTTER
+--------------------------------------------------------------------------------
+Toàn bộ mã nguồn Mobile Flutter đã được hoàn thiện đầy đủ cấu trúc Android
+(kèm quyền GPS, Camera, SQLite ngoại tuyến và bộ API backend):
+
+1. Mở thư mục "apps/mobile-flutter" hoặc giải nén file:
+   "Source_Mobile_Flutter_Ready_To_Build.zip".
+2. Trên máy tính có cài Flutter SDK (hoặc chuyển cho lập trình viên):
+   - Nhấp đúp vào file "Build_APK.bat"
+   - Hoặc gõ lệnh:
+       cd apps/mobile-flutter
+       flutter pub get
+       flutter build apk --release
+3. File cài đặt "app-release.apk" sẽ được tạo ra tại thư mục:
+   build/app/outputs/flutter-apk/app-release.apk
+4. Copy file APK này vào bất kỳ điện thoại Android nào để cài đặt và sử dụng!
+
+--------------------------------------------------------------------------------
+CÁCH 2: DÙNG TRỰC TIẾP TRÊN ĐIỆN THOẠI QUA MẠNG WI-FI (KHÔNG CẦN CÀI FLUTTER)
+--------------------------------------------------------------------------------
+Nếu máy tính của bạn chưa cài Flutter SDK, bạn hoàn toàn có thể dùng điện thoại
+thật để trải nghiệm ngay lập tức như sau:
+
+1. Đảm bảo điện thoại và máy tính kết nối CHUNG một mạng Wi-Fi.
+2. Trên máy tính, kiểm tra địa chỉ IP WiFi (Gõ lệnh "ipconfig" trong CMD, ví dụ: 192.168.1.15).
+3. Mở trình duyệt Chrome/Safari trên điện thoại và gõ địa chỉ:
+   http://192.168.1.15:3000
+4. Bấm vào biểu tượng 3 chấm trên trình duyệt điện thoại -> Chọn "Cài đặt ứng dụng"
+   hoặc "Thêm vào màn hình chính (Add to Home Screen)".
+5. Một biểu tượng App SFA sẽ xuất hiện ngoài màn hình chính điện thoại, mở ra chạy
+   toàn màn hình độc lập như app cài từ CH Play!
+
+--------------------------------------------------------------------------------
+CÁCH 3: TRẢI NGHIỆM GIẢ LẬP MOBILE NGAY TRÊN APP DESKTOP
+--------------------------------------------------------------------------------
+Ngay trên ứng dụng Desktop, bạn vào menu:
+"Giả Lập Mobile Sale SFA" (nút màu xanh lá nổi bật trên thanh menu bên trái)
+để thực hiện:
+- Đi tuyến 5 bước (Check-in GPS, Kiểm Date, Chụp ảnh quầy, Lên đơn, VietQR)
+- Soạn hàng bốc lên xe & Quản lý tồn kho xe tải lưu động
+- Ghi nhớ nợ hàng / Hẹn ngày giao bù cho tiệm tạp hóa

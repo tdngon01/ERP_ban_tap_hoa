@@ -1,0 +1,19 @@
+================================================================================
+   HƯỚNG DẪN SỬ DỤNG BẢN ĐÓNG GÓI DESKTOP (ERP & DMS BÁNH KẸO FMCG)
+   Chi phí vận hành: 0 ĐỒNG - Hoạt động ngoại tuyến 100% không cần VPS
+================================================================================
+
+1. CÁCH CHẠY PHẦN MỀM:
+   - Cách 1 (Khuyên dùng): Chạy file "ERP_Banh_Keo_FMCG_Desktop_App.exe" trực tiếp.
+   - Cách 2: Bấm đúp vào file "Chay_App_Desktop.bat" hoặc "Khoi_Dong_Desktop.vbs" (chạy ngầm êm ái).
+
+2. TẠO BIỂU TƯỢNG SHORTCUT NGOÀI MÀN HÌNH CHÍNH (DESKTOP ICON):
+   - Nhấp đúp vào file "Tao_Shortcut_Desktop.bat".
+   - Ngay lập tức một biểu tượng logo ứng dụng "ERP Banh Keo FMCG" sẽ xuất hiện ngoài màn hình Desktop của bạn.
+   - Mỗi lần mở máy tính chỉ cần bấm vào biểu tượng đó để vào phần mềm!
+
+3. CƠ CHẾ AN TOÀN DỮ LIỆU:
+   - Không bị mở nhiều cửa sổ trùng lặp (Single Instance Lock).
+   - Tự động quản lý cơ sở dữ liệu SQLite tại máy tính.
+   - Có nút sao lưu CSDL 1-click trong menu "Cài Đặt & Sao Lưu DB".
+   - Tích hợp sẵn menu "Đồng Bộ Google Sheets" để lưu dữ liệu lên mây miễn phí.

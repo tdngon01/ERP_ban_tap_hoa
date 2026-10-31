@@ -2,6 +2,8 @@
   "name": "web-admin",
   "private": true,
   "version": "1.0.0",
+  "description": "He thong ERP & DMS Banh Keo FMCG (Desktop App)",
+  "author": "Antigravity Team",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite --port 3000 --host",
@@ -13,6 +15,7 @@
   "build": {
     "appId": "com.erpfmcg.banhkeo",
     "productName": "ERP Banh Keo FMCG",
+    "electronVersion": "41.7.1",
     "directories": {
       "output": "release"
     },
@@ -38,7 +41,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.19",
-    "electron": "^41.7.1",
+    "electron": "41.7.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
