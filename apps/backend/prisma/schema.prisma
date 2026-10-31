@@ -1,0 +1,254 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Quản lý Sản phẩm (SKU)
+model Product {
+  id             String         @id @default(uuid())
+  code           String         @unique // SKU, ví dụ: "CP-ORION-BOX12"
+  name           String         // Tên sản phẩm, ví dụ: "Bánh Chocopie Orion 12P"
+  category       String         // Ngành hàng: "Bánh quy", "Kẹo dẻo", "Sô-cô-la", "Snack", v.v.
+  brand          String         // Thương hiệu: "Orion", "Kinh Đô", "Oishi", v.v.
+  barcode        String?
+  baseUom        String         @default("Gói") // Đơn vị cơ sở nhỏ nhất
+  shelfLifeDays  Int            @default(365)   // Hạn sử dụng (ngày)
+  imageUrl       String?
+  description    String?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  uoms           ProductUom[]
+  inventoryLots  InventoryLot[]
+  orderItems     SalesOrderItem[]
+}
+
+// 2. Bảng quy đổi Đa đơn vị tính (UoM Conversion)
+model ProductUom {
+  id               String   @id @default(uuid())
+  productId        String
+  uomName          String   // "Gói", "Hộp", "Thùng", "Lốc", "Dây"
+  conversionFactor Float    // Hệ số quy đổi ra Base UoM (Ví dụ: Thùng = 72 gói, Hộp = 12 gói)
+  isBaseUom        Boolean  @default(false)
+  isDefaultSaleUom Boolean  @default(false)
+  price            Float    // Giá bán niêm yết theo ĐVT này
+  barcode          String?
+  createdAt        DateTime @default(now())
+
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, uomName])
+}
+
+// 3. Quản lý Kho bãi
+model Warehouse {
+  id              String         @id @default(uuid())
+  code            String         @unique // "KHO-TONG", "KHO-KM", "VAN-XE-01"
+  name            String
+  type            String         @default("CENTRAL") // CENTRAL, PROMOTION, DAMAGED, VAN
+  address         String?
+  assignedSalesId String?
+  createdAt       DateTime       @default(now())
+
+  inventoryLots   InventoryLot[]
+  stockMovements  StockMovement[]
+}
+
+// 4. Quản lý Lô & Hạn sử dụng - FEFO (First Expired, First Out)
+model InventoryLot {
+  id              String    @id @default(uuid())
+  warehouseId     String
+  productId       String
+  batchCode       String    // Số lô, ví dụ: "LOT202610A"
+  manufactureDate DateTime  // Ngày sản xuất
+  expiryDate      DateTime  // Ngày hết hạn (Dùng để sắp xếp FEFO)
+  physicalQty     Float     // Tồn thực tế tại kho (quy về Base UoM)
+  reservedQty     Float     @default(0) // Tồn đang giữ chỗ cho đơn Pre-sales
+  availableQty    Float     // Tồn khả dụng = physicalQty - reservedQty
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  warehouse       Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([warehouseId, productId, batchCode])
+}
+
+// 5. Lịch sử dịch chuyển kho
+model StockMovement {
+  id           String    @id @default(uuid())
+  warehouseId  String
+  productId    String
+  batchCode    String
+  type         String    // INBOUND_PO, OUTBOUND_SALE, TRANSFER_VAN, ADJUSTMENT_DAMAGE, RETURN_EXPIRED
+  quantity     Float     // Số lượng quy đổi theo Base UoM
+  uomName      String?
+  refOrderCode String?
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+}
+
+// 6. Điểm bán Tạp hóa (Outlet)
+model Outlet {
+  id           String          @id @default(uuid())
+  code         String          @unique // "TH-001"
+  name         String          // "Tạp Hóa Chị Lan"
+  ownerName    String
+  phone        String
+  address      String
+  district     String
+  province     String          @default("Hồ Chí Minh")
+  latitude     Float           // Tọa độ GPS chuẩn để xác thực Check-in
+  longitude    Float
+  creditLimit  Float           @default(10000000) // Hạn mức nợ (VNĐ)
+  currentDebt  Float           @default(0)        // Công nợ hiện tại
+  routeId      String?
+  tier         String          @default("STANDARD") // VIP, GOLD, SILVER, STANDARD
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+
+  route        Route?          @relation(fields: [routeId], references: [id])
+  visits       StoreVisit[]
+  orders       SalesOrder[]
+  payments     PaymentReceipt[]
+}
+
+// 7. Tuyến bán hàng MCP (Master Call Plan)
+model Route {
+  id           String          @id @default(uuid())
+  code         String          @unique // "TUYEN-Q1-T2"
+  name         String          // "Tuyến Quận 1 - Thứ Hai"
+  dayOfWeek    String          // MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
+  salesRepName String          // Nhân viên Sale thị trường phụ trách
+  salesRepPhone String?
+  createdAt    DateTime        @default(now())
+
+  outlets      Outlet[]
+  visits       StoreVisit[]
+}
+
+// 8. Lịch sử Viếng thăm Điểm bán của Sale
+model StoreVisit {
+  id                  String    @id @default(uuid())
+  outletId            String
+  routeId             String?
+  salesRepName        String
+  visitDate           DateTime  @default(now())
+  checkInTime         DateTime  @default(now())
+  checkOutTime        DateTime?
+  checkInLat          Float?
+  checkInLng          Float?
+  distanceMeters      Float?    // Khoảng cách thực tế so với tọa độ tiệm
+  isGpsValid          Boolean   @default(false) // Hợp lệ nếu distanceMeters <= 100m
+  storePhotoUrl       String?   // Ảnh chụp mặt tiền quầy
+  displayPhotoUrl     String?   // Ảnh chụp trưng bày POSM
+  storeInventoryNotes String?   // Ghi nhận tồn date tại quầy
+  hasOrder            Boolean   @default(false)
+  noOrderReason       String?   // "Chủ tiệm đi vắng", "Còn tồn nhiều", "Chưa thu được tiền", v.v.
+  notes               String?
+  createdAt           DateTime  @default(now())
+
+  outlet              Outlet    @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  route               Route?    @relation(fields: [routeId], references: [id])
+}
+
+// 9. Bộ máy Khuyến mãi (Promotion Engine)
+model PromotionRule {
+  id              String    @id @default(uuid())
+  code            String    @unique // "KM-T10-CHOCO"
+  name            String    // "Mua 5 Thùng Chocopie Tặng 1 Thùng Oishi Bắp Cay"
+  type            String    // BUY_X_GET_Y, ORDER_DISCOUNT_PERCENT, ORDER_DISCOUNT_AMOUNT
+  minOrderAmount  Float?    // Áp dụng nếu đạt tổng tiền đơn hàng tối thiểu
+  buyProductId    String?   // Mã sản phẩm cần mua
+  buyQty          Float?    // Số lượng mua
+  buyUom          String?   // ĐVT mua (Thùng/Hộp/Gói)
+  giftProductId   String?   // Sản phẩm tặng
+  giftQty         Float?    // Số lượng tặng
+  giftUom         String?   // ĐVT tặng
+  discountPercent Float?    // % giảm giá
+  discountAmount  Float?    // Số tiền giảm trực tiếp
+  startDate       DateTime
+  endDate         DateTime
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+}
+
+// 10. Đơn hàng Bán (Sales Order)
+model SalesOrder {
+  id             String           @id @default(uuid())
+  orderCode      String           @unique // "ORD-20261031-001"
+  outletId       String
+  salesRepName   String
+  orderType      String           @default("PRE_SALES") // PRE_SALES, VAN_SALES
+  status         String           @default("PENDING")   // PENDING, CONFIRMED, PICKED, DELIVERED, CANCELLED
+  paymentStatus  String           @default("UNPAID")    // UNPAID, PARTIALLY_PAID, PAID
+  subTotal       Float            @default(0)
+  discountAmount Float            @default(0)
+  totalAmount    Float            @default(0)
+  paidAmount     Float            @default(0)
+  notes          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  outlet         Outlet           @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  items          SalesOrderItem[]
+  payments       PaymentReceipt[]
+}
+
+// 11. Chi tiết Đơn hàng & Tách dòng Hàng bán / Hàng tặng
+model SalesOrderItem {
+  id              String      @id @default(uuid())
+  orderId         String
+  productId       String
+  uomName         String      // "Thùng", "Hộp", "Gói"
+  quantity        Float       // Số lượng theo ĐVT đã chọn
+  baseQty         Float       // Số lượng quy đổi ra Base UoM
+  unitPrice       Float       // Giá 1 ĐVT
+  totalPrice      Float       // Thành tiền
+  isGiftItem      Boolean     @default(false) // True nếu là hàng tặng KM
+  promotionRuleId String?     // Liên kết chương trình khuyến mãi
+  allocatedBatch  String?     // Lô FEFO được phân bổ xuất
+
+  order           SalesOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product     @relation(fields: [productId], references: [id])
+}
+
+// 12. Phiếu Thu tiền & Gạch nợ VietQR
+model PaymentReceipt {
+  id            String      @id @default(uuid())
+  receiptCode   String      @unique // "REC-20261031-001"
+  outletId      String
+  orderId       String?
+  amount        Float       // Số tiền thu
+  paymentMethod String      @default("VIETQR_TRANSFER") // CASH, VIETQR_TRANSFER
+  vietQrRefCode String?     // Mã tham chiếu thanh toán VietQR
+  status        String      @default("CONFIRMED_BY_ACCOUNTANT") // COLLECTED_BY_SALE, CONFIRMED_BY_ACCOUNTANT
+  receiptDate   DateTime    @default(now())
+  notes         String?
+
+  outlet        Outlet      @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  order         SalesOrder? @relation(fields: [orderId], references: [id])
+}
+
+// 13. Cấu hình Đồng bộ Google Sheets
+model GoogleSheetsConfig {
+  id                 String   @id @default(uuid())
+  spreadsheetId      String   // ID của Google Sheet
+  sheetNameProducts  String   @default("SanPham")
+  sheetNameOutlets   String   @default("DiemBan")
+  sheetNameOrders    String   @default("DonHang")
+  sheetNameInventory String   @default("TonKho")
+  apiKey             String?
+  serviceAccountJson String?  // Chuỗi JSON Service Account Google Cloud
+  lastSyncAt         DateTime?
+  autoSync           Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+}
+
