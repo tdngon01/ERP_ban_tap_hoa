@@ -9,6 +9,7 @@
   "scripts": {
     "start:backend": "cd apps/backend && npm run start:dev",
     "start:web": "cd apps/web-admin && npm run dev",
+    "desktop": "cd apps/web-admin && npm run desktop",
     "dev": "npm run start:backend",
     "build": "npm run build --workspaces",
     "seed": "cd apps/backend && npm run seed"

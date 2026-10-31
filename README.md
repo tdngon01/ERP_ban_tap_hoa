@@ -83,16 +83,21 @@ npm run start:dev
 ```
 Backend API sẽ lắng nghe tại: `http://localhost:5000`
 
-### Bước 2: Khởi động Web Quản Trị ERP & Giả Lập Mobile SFA
+### Bước 2: Khởi động Ứng Dụng Desktop (0 đồng VPS - 0 đồng Domain)
 
-Mở cửa sổ Terminal thứ hai:
+Cách 1 (Nhanh nhất): Nhấp đúp chuột vào tệp tin **`Chay_App_Desktop.bat`** tại thư mục gốc `d:\ERP_BanHang`.
+Cửa sổ phần mềm Desktop ERP sẽ tự động mở lên trên màn hình máy tính của bạn!
+
+Cách 2: Chạy lệnh qua PowerShell:
+```bash
+npm run desktop
+```
+
+### Bước 3: Khởi động Web Quản Trị trên Trình Duyệt (Tùy chọn)
+
+Mở cửa sổ Terminal:
 ```bash
 cd d:\ERP_BanHang\apps\web-admin
-
-# 1. Cài đặt các gói phụ thuộc
-npm install
-
-# 2. Khởi động Web App
 npm run dev
 ```
 Truy cập trình duyệt tại: `http://localhost:3000`
