@@ -28,7 +28,7 @@ export const App: React.FC = () => {
       case 'picking-list':
         return { title: 'Bảng Kê Soạn Hàng Tổng Cho Xe Tải (Picking List)', subtitle: 'Gộp các đơn hàng đã xác nhận để thủ kho soạn hàng tập trung theo lô FEFO' };
       case 'outlets':
-        return { title: 'Quản Lý Điểm Bán Tạp Hóa (General Trade - GT)', subtitle: 'Danh sách tiệm, chủ tiệm, hạn mức công nợ và tọa độ GPS' };
+        return { title: 'Quản Lý Khách Hàng & Điểm Bán Tạp Hóa (Customer CRM 360°)', subtitle: 'Hồ sơ 360° khách hàng, phân hạng VIP/Vàng, hạn mức công nợ gối đầu, lịch sử mua hàng và vị trí Google Maps' };
       case 'routes':
         return { title: 'Lịch Trình Tuyến Bán Hàng (MCP T2 - T7) & Giám Sát GPS', subtitle: 'Xác thực khoảng cách check-in và theo dõi tiến độ nhân viên thị trường' };
       case 'orders':

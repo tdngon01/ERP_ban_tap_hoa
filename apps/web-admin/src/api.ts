@@ -26,9 +26,10 @@ export const createInboundLot = (data: any) => api.post('/inventory/inbound', da
 export const getPickingList = (status?: string) => 
   api.get('/inventory/picking-list', { params: { status } }).then(r => r.data);
 
-// Outlets
+// Outlets & Customer CRM
 export const getOutlets = (routeId?: string, search?: string) => 
   api.get('/outlets', { params: { routeId, search } }).then(r => r.data);
+export const getOutletDetail = (id: string) => api.get(`/outlets/${id}`).then(r => r.data);
 export const createOutlet = (data: any) => api.post('/outlets', data).then(r => r.data);
 export const updateOutlet = (id: string, data: any) => api.put(`/outlets/${id}`, data).then(r => r.data);
 
