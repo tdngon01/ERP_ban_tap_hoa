@@ -9,5 +9,7 @@ class ApiConstants {
   static const String productsEndpoint = '$baseUrl/products';
   static const String ordersEndpoint = '$baseUrl/orders';
   static const String vietQrEndpoint = '$baseUrl/debt/vietqr/generate';
+  static const String vanStockEndpoint = '$baseUrl/inventory/van-stock';
+  static const String backordersEndpoint = '$baseUrl/inventory/backorders';
 }
 

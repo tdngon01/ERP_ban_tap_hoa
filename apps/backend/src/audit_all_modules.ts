@@ -90,6 +90,46 @@ async function runFullAudit() {
     const picking = await inventory.getPickingList('CONFIRMED');
     record('Inventory Picking', 'Bảng kê soạn hàng xe tải tập trung', picking.pickingItems !== undefined, `Tổng hợp ${picking.totalOrdersCount} đơn, ${picking.pickingItems.length} mặt hàng gom lên xe`);
 
+    // 4b. KIỂM TRA TỒN KHO XE VAN SALES & SỔ GHI NHỚ GIAO BÙ
+    console.log('\n--- 4b. KIỂM TRA SOẠN HÀNG LÊN XE VAN & SỔ GHI NHỚ GIAO BÙ ---');
+    const vanStockBefore = await inventory.getVanStock();
+    record('Van Stock', 'Lấy tồn kho xe Van Sales lưu động', vanStockBefore.vanWarehouse !== undefined, `Kho xe: ${vanStockBefore.vanWarehouse.name} (${vanStockBefore.vanWarehouse.code}), Phụ trách: ${vanStockBefore.vanWarehouse.assignedSales}`);
+
+    if (chocopie) {
+      const loadResult = await inventory.loadItemsToVan({
+        salesRepName: 'Nguyễn Văn Hùng',
+        items: [
+          { productId: chocopie.id, uomName: 'Thùng', quantity: 2 },
+        ],
+      });
+      record('Van Stock Loading', 'Soạn bốc thêm 2 Thùng Chocopie lên xe', loadResult.items !== undefined, `Cập nhật tồn kho xe: ${loadResult.items.length} mặt hàng trên xe`);
+    }
+
+    const allOutletsForBo = await outlets.findAll();
+    const testBoOutlet = allOutletsForBo[0];
+    let createdBoId = '';
+    if (testBoOutlet && chocopie) {
+      const newBo = await inventory.createBackorderReminder({
+        outletId: testBoOutlet.id,
+        productId: chocopie.id,
+        uomName: 'Thùng',
+        quantity: 2,
+        promisedDate: '2026-11-03',
+        reason: 'Xe hết hàng giữa tuyến, khách dặn thêm giao đợt sau',
+        salesRepName: 'Nguyễn Văn Hùng',
+      });
+      createdBoId = newBo.id;
+      record('Backorder Reminder', 'Ghi chú hẹn giao bù khi thiếu hàng', newBo.id !== undefined, `Đã ghi nhận nợ ${newBo.quantity} ${newBo.uomName} cho ${newBo.outlet?.name}`);
+
+      const allBo = await inventory.getBackorderReminders();
+      record('Backorder List', 'Truy vấn danh sách sổ ghi nhớ giao bù', allBo.length > 0, `Hiện có ${allBo.length} ghi chú giao bổ sung trên toàn hệ thống`);
+
+      if (createdBoId) {
+        const resolvedBo = await inventory.resolveBackorderReminder(createdBoId);
+        record('Backorder Resolve', 'Đánh dấu hoàn tất giao bổ sung hàng', resolvedBo.status === 'RESOLVED', `Ghi chú ID ${resolvedBo.id} chuyển trạng thái RESOLVED vào lúc ${resolvedBo.resolvedAt}`);
+      }
+    }
+
     // 5. KIỂM TRA KHÁCH HÀNG CRM 360 & GOOGLE MAPS
     console.log('\n--- 5. KIỂM TRA KHÁCH HÀNG CRM 360 & TỌA ĐỘ GOOGLE MAPS ---');
     const allOutlets = await outlets.findAll();

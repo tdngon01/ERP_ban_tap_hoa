@@ -25,6 +25,16 @@ export const recommendFefo = (productId: string, requiredBaseQty: number, wareho
 export const createInboundLot = (data: any) => api.post('/inventory/inbound', data).then(r => r.data);
 export const getPickingList = (status?: string) => 
   api.get('/inventory/picking-list', { params: { status } }).then(r => r.data);
+export const getVanStock = (salesRepName?: string) => 
+  api.get('/inventory/van-stock', { params: { salesRepName } }).then(r => r.data);
+export const loadItemsToVan = (data: any) => 
+  api.post('/inventory/van-stock/load', data).then(r => r.data);
+export const getBackorders = (status?: string, salesRepName?: string) => 
+  api.get('/inventory/backorders', { params: { status, salesRepName } }).then(r => r.data);
+export const createBackorder = (data: any) => 
+  api.post('/inventory/backorders', data).then(r => r.data);
+export const resolveBackorder = (id: string) => 
+  api.post(`/inventory/backorders/${id}/resolve`).then(r => r.data);
 
 // Outlets & Customer CRM
 export const getOutlets = (routeId?: string, search?: string) => 

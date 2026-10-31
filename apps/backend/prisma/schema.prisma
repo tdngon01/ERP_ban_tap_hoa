@@ -26,6 +26,7 @@ model Product {
   uoms           ProductUom[]
   inventoryLots  InventoryLot[]
   orderItems     SalesOrderItem[]
+  backorders     BackorderReminder[]
 }
 
 // 2. Bảng quy đổi Đa đơn vị tính (UoM Conversion)
@@ -118,6 +119,7 @@ model Outlet {
   visits       StoreVisit[]
   orders       SalesOrder[]
   payments     PaymentReceipt[]
+  backorders   BackorderReminder[]
 }
 
 // 7. Tuyến bán hàng MCP (Master Call Plan)
@@ -267,5 +269,25 @@ model SystemSetting {
   invoiceNotes    String?  @default("Cảm ơn Quý khách! Vui lòng kiểm tra kỹ số lượng, hạn sử dụng bánh kẹo và quét mã QR thanh toán.")
   updatedAt       DateTime @updatedAt
 }
+
+// 15. Ghi nhớ Giao Hàng Bổ Sung / Nợ Hàng Xe Van (Backorders / Pending Deliveries)
+model BackorderReminder {
+  id            String    @id @default(uuid())
+  outletId      String
+  productId     String
+  uomName       String    @default("Thùng") // Thùng, Hộp, Gói
+  quantity      Float
+  promisedDate  DateTime? // Ngày hẹn giao bổ sung
+  reason        String?   // "Hết hàng trên xe", "Khách đặt thêm ngoài kế hoạch", v.v.
+  status        String    @default("PENDING") // PENDING, DELIVERED, CANCELLED
+  salesRepName  String?
+  notes         String?
+  resolvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  outlet        Outlet    @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
 
 
