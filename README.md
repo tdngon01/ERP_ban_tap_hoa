@@ -10,6 +10,12 @@ Hệ thống chuyên biệt cho **Nhà Phân Phối (NPP)** và **Đội ngũ Sa
 
 ---
 
+7. **In Phiếu Giao Hàng & Hóa Đơn kèm mã VietQR**: Hỗ trợ in khổ A4/A5 hoặc máy in nhiệt; tự động sinh mã VietQR Napas với số tiền còn nợ và nội dung chuyển khoản để chủ tạp hóa quét thanh toán khi tài xế giao hàng.
+8. **Bảng Kê Soạn Hàng Tổng Cho Xe Tải (Consolidated Warehouse Picking List)**: Tự động gom toàn bộ đơn hàng trong ngày, bốc hàng theo chuẩn lô cận date FEFO, tiết kiệm thời gian gom hàng cho đội ngũ thủ kho.
+9. **Cài Đặt Hệ Thống, Sao Lưu CSDL 1-Click & Xuất Excel (UTF-8 BOM)**: Tùy biến thông tin NPP, tài khoản ngân hàng nhận tiền, sao lưu snapshot SQLite an toàn chỉ với 1 click, tải báo cáo định dạng CSV chuẩn tiếng Việt.
+
+---
+
 ## 📁 Cấu Trúc Dự Án (Monorepo)
 
 ```text
@@ -17,34 +23,44 @@ ERP_BanHang/
 ├── apps/
 │   ├── backend/                 # Core API & Nghiệp vụ ERP (NestJS + Prisma + Google Sheets API)
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma   # Schema CSDL 13 thực thể chuẩn hóa
+│   │   │   ├── schema.prisma   # Schema CSDL 14 thực thể chuẩn hóa (kèm SystemSetting)
 │   │   │   └── seed.ts         # Dữ liệu mẫu Bánh kẹo VN (Chocopie, AFC, Custas, Oishi...)
 │   │   ├── src/
 │   │   │   ├── modules/
 │   │   │   │   ├── google-sheets/  # Tích hợp Google Sheets API v4
 │   │   │   │   ├── products/       # Đa đơn vị tính & Quy đổi ĐVT
-│   │   │   │   ├── inventory/      # Thuật toán FEFO & Quản lý Lô HSD
+│   │   │   │   ├── inventory/      # Thuật toán FEFO, Quản lý Lô HSD & Soạn hàng xe tải (Picking List)
 │   │   │   │   ├── outlets/        # Điểm bán tạp hóa & Hạn mức nợ
 │   │   │   │   ├── routes/         # Tuyến MCP T2-T7 & Check-in GPS Haversine
 │   │   │   │   ├── orders/         # Khuyến mãi & Đơn Pre-sales / Van sales
 │   │   │   │   ├── debt/           # Sổ cái công nợ & Sinh VietQR động
-│   │   │   │   └── dashboard/      # BI & Báo cáo điều hành
+│   │   │   │   ├── dashboard/      # BI & Báo cáo điều hành
+│   │   │   │   └── settings/       # Cài đặt NPP, Sao lưu CSDL 1-click & Xuất CSV UTF-8
 │   │   │   ├── main.ts
 │   │   │   └── app.module.ts
 │   │   ├── package.json
 │   │   └── .env
 │   │
-│   ├── web-admin/               # Web Quản Trị NPP & Giả Lập Mobile SFA (React + Vite + Tailwind)
+│   ├── web-admin/               # Web Quản Trị NPP & Desktop App (React + Vite + Tailwind + Electron)
+│   │   ├── electron/
+│   │   │   ├── main.cjs        # Desktop launcher (Single Instance, khay hệ thống, chống mở lặp tab)
+│   │   │   └── preload.cjs
 │   │   ├── src/
+│   │   │   ├── components/
+│   │   │   │   ├── InvoiceModal.tsx        # Phiếu Giao Hàng & Hóa Đơn in ấn kèm VietQR
+│   │   │   │   ├── Navbar.tsx
+│   │   │   │   └── Sidebar.tsx
 │   │   │   ├── pages/
 │   │   │   │   ├── DashboardPage.tsx       # Bảng điều hành KPI & Cảnh báo FEFO
 │   │   │   │   ├── ProductsPage.tsx        # Bánh kẹo & Bộ máy quy đổi ĐVT
 │   │   │   │   ├── InventoryFefoPage.tsx   # Kho bãi & Đề xuất bốc lô FEFO
+│   │   │   │   ├── PickingListPage.tsx     # Bảng kê soạn hàng xe tải tập trung
 │   │   │   │   ├── OutletsPage.tsx         # Điểm bán tạp hóa GT & Hạn mức nợ
 │   │   │   │   ├── RouteMcpPage.tsx        # Tuyến MCP & Giám sát vị trí Sale
-│   │   │   │   ├── OrdersPage.tsx          # Đơn hàng & Tách dòng Hàng bán/Tặng
+│   │   │   │   ├── OrdersPage.tsx          # Đơn hàng, Tách dòng Hàng bán/Tặng & In hóa đơn
 │   │   │   │   ├── DebtVietQrPage.tsx      # Sổ cái công nợ & Sinh mã VietQR
 │   │   │   │   ├── GoogleSheetsPage.tsx    # Trung tâm đồng bộ Google Sheets API
+│   │   │   │   ├── SettingsPage.tsx        # Cài đặt NPP, STK VietQR, Sao lưu DB & Xuất CSV
 │   │   │   │   └── MobileSfaSimulator.tsx  # Giả lập điện thoại Sale 5 bước viếng thăm
 │   │   │   ├── App.tsx
 │   │   │   └── main.tsx
@@ -57,6 +73,8 @@ ERP_BanHang/
 │       ├── pubspec.yaml
 │       └── README.md
 │
+├── Chay_App_Desktop.bat         # 1-Click khởi động Desktop App (0 đồng VPS)
+├── Tao_Shortcut_Desktop.bat     # Tạo lối tắt ra màn hình Desktop Windows
 ├── package.json
 └── README.md
 ```
