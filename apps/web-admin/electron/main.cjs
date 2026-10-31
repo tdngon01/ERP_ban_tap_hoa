@@ -6,25 +6,53 @@ const { spawn } = require('child_process');
 const http = require('http');
 const fs = require('fs');
 
+// 1. CHỐNG MỞ NHIỀU CỬA SỔ (SINGLE INSTANCE LOCK)
+// Đảm bảo chỉ có DUY NHẤT 1 cửa sổ ứng dụng chạy tại 1 thời điểm!
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  // Nếu đã có 1 app đang chạy thì thoát ngay lập tức tiến trình mới
+  app.quit();
+  process.exit(0);
+}
+
 let mainWindow = null;
 let tray = null;
 let backendProcess = null;
+let isWindowCreated = false;
 
-// Kiểm tra xem Backend API port 5000 đã phản hồi chưa
+// Khi người dùng bấm mở lại lần nữa -> Chỉ hiện & focus cửa sổ đang mở
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.focus();
+  }
+});
+
+// 2. KIỂM TRA BACKEND VỚI CƠ CHẾ ONCE (CHỐNG GỌI CALLBACK NHIỀU LẦN GÂY NHÂN BẢN CỬA SỔ)
 function checkBackendAlive(callback) {
+  let finished = false;
+  const finish = (result) => {
+    if (!finished) {
+      finished = true;
+      callback(result);
+    }
+  };
+
   const req = http.get('http://localhost:5000/api/dashboard/metrics', (res) => {
-    callback(true);
+    finish(res.statusCode === 200 || res.statusCode === 304);
   });
+
   req.on('error', () => {
-    callback(false);
+    finish(false);
   });
-  req.setTimeout(1000, () => {
+
+  req.setTimeout(800, () => {
     req.destroy();
-    callback(false);
+    finish(false);
   });
 }
 
-// Chờ Backend khởi động thành công (tối đa 15 giây)
 function waitForBackend(retries, delay, callback) {
   checkBackendAlive((alive) => {
     if (alive) {
@@ -44,7 +72,6 @@ function startBackend() {
   console.log('🚀 Khởi chạy Backend ERP Engine nội bộ...');
 
   if (fs.existsSync(compiledMain)) {
-    // Chạy từ file biên dịch siêu tốc (chỉ 0.3s)
     backendProcess = spawn('node', ['dist/src/main.js'], {
       cwd: backendDir,
       shell: true,
@@ -52,7 +79,6 @@ function startBackend() {
       detached: false,
     });
   } else {
-    // Fallback nếu chưa compile
     backendProcess = spawn('npm.cmd', ['run', 'start:dev'], {
       cwd: backendDir,
       shell: true,
@@ -66,7 +92,15 @@ function startBackend() {
   });
 }
 
+// 3. TẠO CỬA SỔ DUY NHẤT
 function createWindow() {
+  // Nếu cửa sổ đã được tạo thì không tạo thêm
+  if (mainWindow) {
+    mainWindow.show();
+    mainWindow.focus();
+    return;
+  }
+
   const iconPath = path.join(__dirname, 'icon.png');
 
   mainWindow = new BrowserWindow({
@@ -79,19 +113,33 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: false, // Cho phép gọi API localhost từ file://
+      webSecurity: false,
     },
-    show: false, // Ẩn cho đến khi nội dung sẵn sàng để tránh giật hình
+    show: false,
     backgroundColor: '#0f172a',
   });
 
-  // Thiết lập Menu ứng dụng
+  // 4. CHẶN TỰ ĐỘNG MỞ CỬA SỔ / TAB MỚI KHI CLICK LINK HOẶC TARGET="_BLANK"
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Mở liên kết ngoài (Google Sheets, URL ảnh) trên trình duyệt mặc định (Chrome/Edge)
+    shell.openExternal(url);
+    return { action: 'deny' }; // Tuyệt đối KHÔNG mở thêm cửa sổ Electron!
+  });
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('http://localhost') && !url.startsWith('file://')) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
+
+  // Menu ứng dụng
   const template = [
     {
       label: 'Hệ Thống',
       submenu: [
         { label: 'Tải lại trang (F5)', role: 'reload' },
-        { label: 'Bật/Tắt Toàn màn hình', role: 'togglefullscreen' },
+        { label: 'Bật/Tắt Toàn màn hình (F11)', role: 'togglefullscreen' },
         { type: 'separator' },
         {
           label: 'Thu nhỏ xuống Khay hệ thống',
@@ -142,7 +190,7 @@ function createWindow() {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  // Thiết lập System Tray (Khay đồng hồ Windows)
+  // System Tray
   if (fs.existsSync(iconPath)) {
     try {
       tray = new Tray(iconPath);
@@ -150,8 +198,10 @@ function createWindow() {
         {
           label: 'Mở Giao Diện ERP',
           click: () => {
-            mainWindow.show();
-            mainWindow.focus();
+            if (mainWindow) {
+              mainWindow.show();
+              mainWindow.focus();
+            }
           },
         },
         { type: 'separator' },
@@ -165,15 +215,17 @@ function createWindow() {
       tray.setToolTip('ERP & DMS Bánh Kẹo FMCG');
       tray.setContextMenu(trayMenu);
       tray.on('double-click', () => {
-        mainWindow.show();
-        mainWindow.focus();
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
       });
     } catch (e) {
       console.warn('Không thể tạo System Tray:', e.message);
     }
   }
 
-  // Ưu tiên nạp giao diện tĩnh dist/index.html (Offline 100%)
+  // Tải file tĩnh giao diện
   const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
   const devUrl = 'http://localhost:3000';
 
@@ -189,7 +241,6 @@ function createWindow() {
     mainWindow.show();
     mainWindow.focus();
 
-    // Thông báo Windows
     if (Notification.isSupported()) {
       new Notification({
         title: 'ERP FMCG Desktop Đã Khởi Động',
@@ -201,29 +252,37 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    isWindowCreated = false;
   });
 }
 
-// Khởi chạy ứng dụng
+function safeCreateWindow() {
+  if (!isWindowCreated) {
+    isWindowCreated = true;
+    createWindow();
+  }
+}
+
+// KHỞI ĐỘNG ỨNG DỤNG AN TOÀN
 app.whenReady().then(() => {
   checkBackendAlive((alive) => {
     if (!alive) {
       startBackend();
-      // Chờ backend online rồi mới mở cửa sổ giao diện
       waitForBackend(15, 600, () => {
-        createWindow();
+        safeCreateWindow();
       });
     } else {
-      createWindow();
+      safeCreateWindow();
     }
   });
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      safeCreateWindow();
+    }
   });
 });
 
-// Dọn dẹp tiến trình backend khi đóng ứng dụng
 function cleanupBackend() {
   if (backendProcess) {
     try {

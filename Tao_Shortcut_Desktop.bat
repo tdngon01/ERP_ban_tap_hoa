@@ -15,3 +15,4 @@ echo [x] DA TAO THANH CONG!
 echo Tu bay gio ban co the mo phan mem ngay tu man hinh Desktop cua may tinh.
 echo.
 pause
+
