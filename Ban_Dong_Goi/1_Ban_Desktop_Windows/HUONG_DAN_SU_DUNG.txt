@@ -17,3 +17,4 @@
    - Tự động quản lý cơ sở dữ liệu SQLite tại máy tính.
    - Có nút sao lưu CSDL 1-click trong menu "Cài Đặt & Sao Lưu DB".
    - Tích hợp sẵn menu "Đồng Bộ Google Sheets" để lưu dữ liệu lên mây miễn phí.
+

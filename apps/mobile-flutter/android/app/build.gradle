@@ -17,7 +17,8 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '
 
 android {
     namespace "com.erpfmcg.sfa"
-    compileSdkVersion 34
+    compileSdk 34
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -34,8 +35,8 @@ android {
 
     defaultConfig {
         applicationId "com.erpfmcg.sfa"
-        minSdkVersion 21
-        targetSdkVersion 34
+        minSdk 21
+        targetSdk 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -52,3 +53,4 @@ android {
 flutter {
     source '../..'
 }
+

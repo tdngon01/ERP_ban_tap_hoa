@@ -1,49 +1,33 @@
 ================================================================================
-   HƯỚNG DẪN SỬ DỤNG VÀ ĐÓNG GÓI BẢN MOBILE (SFA / DMS BÁNH KẸO FMCG)
-   Ứng dụng dành cho Nhân viên Bán hàng thị trường & Chở hàng theo xe (Van Sales)
+   HƯỚNG DẪN TẢI & CÀI ĐẶT FILE APK MOBILE (SFA / DMS BÁNH KẸO FMCG)
+   Ứng dụng Android dành cho Nhân Viên Bán Hàng Thị Trường & Van Sales
 ================================================================================
 
-Hệ thống cung cấp 2 giải pháp sử dụng trên điện thoại di động:
+1. TẢI FILE CÀI ĐẶT .APK TRỰC TIẾP VỀ ĐIỆN THOẠI ANDROID (KHUYÊN DÙNG):
+   - Mở trình duyệt trên điện thoại Android, truy cập vào đường link GitHub Release:
+     👉 https://github.com/tdngon01/ERP_ban_tap_hoa/releases/tag/v1.0.0-mobile
 
---------------------------------------------------------------------------------
-CÁCH 1: BIÊN DỊCH RA TỆP CÀI ĐẶT ANDROID (FILE .APK) TỪ NGUỒN FLUTTER
---------------------------------------------------------------------------------
-Toàn bộ mã nguồn Mobile Flutter đã được hoàn thiện đầy đủ cấu trúc Android
-(kèm quyền GPS, Camera, SQLite ngoại tuyến và bộ API backend):
+   - Hoặc bấm vào link tải trực tiếp file APK:
+     👉 https://github.com/tdngon01/ERP_ban_tap_hoa/releases/download/v1.0.0-mobile/app-release.apk
 
-1. Mở thư mục "apps/mobile-flutter" hoặc giải nén file:
-   "Source_Mobile_Flutter_Ready_To_Build.zip".
-2. Trên máy tính có cài Flutter SDK (hoặc chuyển cho lập trình viên):
-   - Nhấp đúp vào file "Build_APK.bat"
-   - Hoặc gõ lệnh:
-       cd apps/mobile-flutter
-       flutter pub get
-       flutter build apk --release
-3. File cài đặt "app-release.apk" sẽ được tạo ra tại thư mục:
-   build/app/outputs/flutter-apk/app-release.apk
-4. Copy file APK này vào bất kỳ điện thoại Android nào để cài đặt và sử dụng!
+   - Sau khi tải xong, bấm vào file "app-release.apk" trên thanh thông báo điện thoại:
+     + Nếu máy hỏi "Cho phép cài đặt ứng dụng không rõ nguồn gốc?", chọn CÓ / CHO PHÉP.
+     + Bấm "Cài đặt" (Install) -> Hoàn tất!
 
---------------------------------------------------------------------------------
-CÁCH 2: DÙNG TRỰC TIẾP TRÊN ĐIỆN THOẠI QUA MẠNG WI-FI (KHÔNG CẦN CÀI FLUTTER)
---------------------------------------------------------------------------------
-Nếu máy tính của bạn chưa cài Flutter SDK, bạn hoàn toàn có thể dùng điện thoại
-thật để trải nghiệm ngay lập tức như sau:
+2. TỰ ĐÓNG GÓI BẰNG MÁY TÍNH CÁ NHÂN:
+   - Nếu bạn có máy tính cài sẵn Flutter SDK:
+     + Mở thư mục "apps/mobile-flutter" (hoặc giải nén Source_Mobile_Flutter_Ready_To_Build.zip).
+     + Nhấp đúp vào file "Build_APK.bat".
+     + File APK sẽ xuất hiện tại: build/app/outputs/flutter-apk/app-release.apk.
 
-1. Đảm bảo điện thoại và máy tính kết nối CHUNG một mạng Wi-Fi.
-2. Trên máy tính, kiểm tra địa chỉ IP WiFi (Gõ lệnh "ipconfig" trong CMD, ví dụ: 192.168.1.15).
-3. Mở trình duyệt Chrome/Safari trên điện thoại và gõ địa chỉ:
-   http://192.168.1.15:3000
-4. Bấm vào biểu tượng 3 chấm trên trình duyệt điện thoại -> Chọn "Cài đặt ứng dụng"
-   hoặc "Thêm vào màn hình chính (Add to Home Screen)".
-5. Một biểu tượng App SFA sẽ xuất hiện ngoài màn hình chính điện thoại, mở ra chạy
-   toàn màn hình độc lập như app cài từ CH Play!
+3. DÙNG TRỰC TIẾP TRÊN ĐIỆN THOẠI QUA MẠNG WI-FI (PWA KHÔNG CẦN CÀI ĐẶT):
+   - Kết nối điện thoại và máy tính chung mạng Wi-Fi.
+   - Mở Chrome trên điện thoại, gõ: http://[IP_WiFi_Máy_Tính]:3000
+   - Bấm menu 3 chấm trên Chrome -> "Cài đặt ứng dụng" / "Thêm vào màn hình chính".
+   - App sẽ xuất hiện ngoài màn hình chính điện thoại, chạy toàn màn hình độc lập!
 
---------------------------------------------------------------------------------
-CÁCH 3: TRẢI NGHIỆM GIẢ LẬP MOBILE NGAY TRÊN APP DESKTOP
---------------------------------------------------------------------------------
-Ngay trên ứng dụng Desktop, bạn vào menu:
-"Giả Lập Mobile Sale SFA" (nút màu xanh lá nổi bật trên thanh menu bên trái)
-để thực hiện:
-- Đi tuyến 5 bước (Check-in GPS, Kiểm Date, Chụp ảnh quầy, Lên đơn, VietQR)
-- Soạn hàng bốc lên xe & Quản lý tồn kho xe tải lưu động
-- Ghi nhớ nợ hàng / Hẹn ngày giao bù cho tiệm tạp hóa
+4. GIẢ LẬP TRÊN APP DESKTOP:
+   - Trên App Desktop, bấm menu "Giả Lập Mobile Sale SFA" để trải nghiệm đầy đủ:
+     + Đi tuyến 5 bước viếng thăm tạp hóa
+     + Bốc hàng lên xe & kiểm tra số lượng bánh tồn xe
+     + Sổ ghi nhớ nợ hàng / hẹn ngày giao bù cho tiệm.

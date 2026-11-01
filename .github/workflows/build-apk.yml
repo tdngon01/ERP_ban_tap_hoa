@@ -1,0 +1,75 @@
+name: Build Android APK SFA DMS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build & Release Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Install Dependencies
+        working-directory: apps/mobile-flutter
+        run: flutter pub get
+
+      - name: Build Android Release APK
+        working-directory: apps/mobile-flutter
+        run: flutter build apk --release
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SFA-BanhKeo-FMCG-Release
+          path: apps/mobile-flutter/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0-mobile
+          name: "SFA DMS Bánh Kẹo FMCG - Bản Cài Đặt Android (APK)"
+          body: |
+            ## 📱 Ứng Dụng Di Động SFA DMS Bán Hàng Bánh Kẹo (FMCG)
+            
+            Đây là tệp cài đặt **`.apk`** chính thức dành cho điện thoại Android của Nhân viên Bán hàng thị trường & Xe tải lưu động (Van Sales).
+            
+            ### 📥 Hướng dẫn cài đặt trên điện thoại Android:
+            1. Bấm vào tệp **`app-release.apk`** ở mục **Assets** bên dưới để tải về điện thoại.
+            2. Mở tệp vừa tải và chọn **"Cài đặt"** (Nếu điện thoại hỏi bảo mật, bật cho phép "Cài đặt ứng dụng từ nguồn này").
+            3. Mở ứng dụng và bắt đầu đi tuyến, bán hàng!
+            
+            ### ✨ Các tính năng tích hợp:
+            - **Tuyến MCP Thứ Hai - Thứ Bảy**: Check-in GPS (<100m) chống giả lập vị trí.
+            - **Quy trình 5 bước**: Kiểm date, chụp ảnh quầy kệ, lên đơn đa ĐVT (Thùng/Hộp/Gói).
+            - **Soạn Hàng Lên Xe & Tồn Kho Xe Van**: Bốc hàng đầu ngày, trừ tồn tức thì khi bán.
+            - **Sổ Ghi Nhớ Giao Bù / Nợ Hàng**: Ghi nhận nợ hàng khi xe hết tải, nhắc lịch giao bù.
+            - **Thanh toán VietQR Napas động**: Quét mã chuyển khoản trực tiếp.
+          files: apps/mobile-flutter/build/app/outputs/flutter-apk/app-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
