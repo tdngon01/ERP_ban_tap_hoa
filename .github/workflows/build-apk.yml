@@ -22,7 +22,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -30,8 +29,15 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Flutter doctor
-        run: flutter doctor -v
+      - name: Generate Official Android Platform Files
+        working-directory: apps/mobile-flutter
+        run: |
+          flutter create --platforms=android --org com.erpfmcg .
+
+      - name: Enable Internet Permission in AndroidManifest
+        working-directory: apps/mobile-flutter
+        run: |
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>' android/app/src/main/AndroidManifest.xml
 
       - name: Install Dependencies
         working-directory: apps/mobile-flutter
