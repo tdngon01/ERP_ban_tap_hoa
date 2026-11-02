@@ -26,6 +26,7 @@ dev.db-journal
 tools/
 release/
 *.exe
+*.apk
 
 # OS and Editor files
 .DS_Store
