@@ -150,7 +150,7 @@ export const DebtVietQrPage: React.FC<{ preselect?: { outletId: string; orderId?
 
       {activeTab === 'ledger' && (
         <>
-          {/* THAM KHẢO PHẦN MỀM CHUYÊN NGHIỆP: 4 Thẻ Phân Tích Tuổi Nợ & Rủi Ro Công Nợ (Debt Aging Cards) */}
+          {/* 4 Thẻ Phân Tích Tuổi Nợ & Rủi Ro Công Nợ (Debt Aging Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
               <div>

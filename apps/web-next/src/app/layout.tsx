@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ERP Phân Phối Bánh Kẹo FMCG & DMS SFA',
-  description: 'Hệ thống Quản trị Bán hàng & Phân phối Bánh kẹo FMCG trên nền tảng Supabase Cloud & Next.js Vercel',
+  title: 'KIM ĐÔ FMCG ERP - Hệ Thống Quản Trị & Phân Phối Bánh Kẹo Doanh Nghiệp',
+  description: 'Giải pháp ERP & DMS chuyên sâu ngành Bánh kẹo & FMCG: Kho vận FEFO, Tuyến bán hàng MCP, Lên đơn nhanh & Gạch nợ VietQR 24/7',
   icons: {
     icon: '/favicon.ico',
   },

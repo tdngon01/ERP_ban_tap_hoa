@@ -277,9 +277,13 @@ export const RouteMcpPage: React.FC = () => {
                             href={v.storePhotoUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:underline"
+                            className="inline-flex items-center space-x-1.5 text-xs text-emerald-600 hover:text-emerald-700 font-bold"
                           >
-                            <ImageIcon className="w-3.5 h-3.5" />
+                            <img
+                              src={v.storePhotoUrl}
+                              alt="Store"
+                              className="w-7 h-7 rounded-lg object-cover border border-slate-200 shadow-xs"
+                            />
                             <span>Xem ảnh</span>
                           </a>
                         ) : (

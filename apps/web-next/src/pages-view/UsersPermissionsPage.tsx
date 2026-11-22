@@ -163,6 +163,23 @@ export const UsersPermissionsPage: React.FC<UsersPermissionsPageProps> = ({
     }
   };
 
+  const getUserAvatar = (role?: string) => {
+    switch (role) {
+      case 'ADMIN':
+        return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80';
+      case 'ACCOUNTANT':
+        return 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&q=80';
+      case 'WAREHOUSE':
+        return 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80';
+      case 'SUPERVISOR':
+        return 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80';
+      case 'SALES_REP':
+        return 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&q=80';
+      default:
+        return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&q=80';
+    }
+  };
+
   const getRoleBadge = (roleKey: string) => {
     const roleDef = rolesData.roles.find((r) => r.key === roleKey);
     if (!roleDef) {
@@ -367,9 +384,11 @@ export const UsersPermissionsPage: React.FC<UsersPermissionsPageProps> = ({
                         >
                           <td className="py-3 px-4">
                             <div className="flex items-center space-x-3">
-                              <div className="w-9 h-9 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-sm shadow-sm">
-                                {u.fullName ? u.fullName.charAt(0).toUpperCase() : 'U'}
-                              </div>
+                              <img
+                                src={getUserAvatar(u.role)}
+                                alt={u.fullName}
+                                className="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/20 shrink-0 shadow-xs"
+                              />
                               <div>
                                 <div className="font-semibold text-slate-900 flex items-center space-x-1.5">
                                   <span>{u.fullName}</span>

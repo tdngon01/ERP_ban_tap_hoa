@@ -14,6 +14,14 @@ import {
 import { getInventoryLots, getWarehouses, recommendFefo, createInboundLot, getProducts } from '../api';
 
 export const InventoryFefoPage: React.FC = () => {
+  const getProductImage = (code?: string) => {
+    if (code?.includes('CHOCO')) return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=150&q=80';
+    if (code?.includes('CUSTAS')) return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&q=80';
+    if (code?.includes('AFC')) return 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=150&q=80';
+    if (code?.includes('COSY')) return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=150&q=80';
+    if (code?.includes('OISHI')) return 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=150&q=80';
+    return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=150&q=80';
+  };
   const [lots, setLots] = useState<any[]>([]);
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>('');
@@ -167,7 +175,7 @@ export const InventoryFefoPage: React.FC = () => {
             className="px-3.5 py-2 rounded-lg bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold hover:bg-amber-100 flex items-center space-x-1.5"
           >
             <Clock className="w-4 h-4 text-amber-600" />
-            <span>Thử Thuật Toán FEFO</span>
+            <span>Đề Xuất Xuất Kho FEFO</span>
           </button>
 
           <button
@@ -209,8 +217,17 @@ export const InventoryFefoPage: React.FC = () => {
                 lots.map((lot) => (
                   <tr key={lot.id} className="hover:bg-slate-50/80 transition">
                     <td className="py-3.5 px-4 font-semibold text-slate-900">
-                      <div>{lot.product?.name}</div>
-                      <div className="text-xs text-slate-400 font-mono font-normal">SKU: {lot.product?.code}</div>
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={getProductImage(lot.product?.code)}
+                          alt={lot.product?.name}
+                          className="w-10 h-10 rounded-xl object-cover shrink-0 border border-slate-100 shadow-xs"
+                        />
+                        <div>
+                          <div className="font-bold text-xs text-slate-900">{lot.product?.name}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">SKU: {lot.product?.code}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 font-mono font-bold text-slate-800 text-xs">
                       {lot.batchCode}

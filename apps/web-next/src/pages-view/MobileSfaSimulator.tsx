@@ -35,6 +35,23 @@ import {
 } from '../api';
 
 export const MobileSfaSimulator: React.FC = () => {
+  const STORE_PHOTOS = [
+    'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=300&q=80',
+    'https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=300&q=80',
+    'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?w=300&q=80',
+    'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=300&q=80',
+    'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&q=80',
+  ];
+
+  const getProductImage = (code?: string) => {
+    if (code?.includes('CHOCO')) return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100&q=80';
+    if (code?.includes('CUSTAS')) return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&q=80';
+    if (code?.includes('AFC')) return 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=100&q=80';
+    if (code?.includes('COSY')) return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&q=80';
+    if (code?.includes('OISHI')) return 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=100&q=80';
+    return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&q=80';
+  };
+
   // Tab chính: 'routes' (Tuyến đi) | 'vanStock' (Hàng trên xe) | 'revenue' (Doanh thu của tôi) | 'shortages' (Báo thiếu hàng)
   const [activeTab, setActiveTab] = useState<'routes' | 'vanStock' | 'revenue' | 'shortages'>('routes');
   const [loading, setLoading] = useState(true);
@@ -566,28 +583,34 @@ export const MobileSfaSimulator: React.FC = () => {
                 Không tìm thấy tiệm tạp hóa nào trên tuyến {selectedDay}.
               </div>
             ) : (
-              currentDayOutlets.map((outlet) => {
+              currentDayOutlets.map((outlet, idx) => {
                 const isDone = outlet.status === 'ĐÃ LÊN ĐƠN';
                 const debt = Number(outlet.currentDebt || 0);
+                const storePhoto = STORE_PHOTOS[idx % STORE_PHOTOS.length];
 
                 return (
                   <div
                     key={outlet.id}
                     className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:border-emerald-300 transition space-y-3"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <img
+                        src={storePhoto}
+                        alt={outlet.name}
+                        className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200 shadow-xs mt-0.5"
+                      />
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-bold text-sm text-slate-900">{outlet.name}</h4>
+                          <h4 className="font-bold text-sm text-slate-900 truncate">{outlet.name}</h4>
                           <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
                               isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
                             }`}
                           >
                             {outlet.status || 'CHƯA GHÉ'}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">
                           Chủ tiệm: <strong>{outlet.ownerName}</strong> • SĐT:{' '}
                           <a href={`tel:${outlet.phone}`} className="text-emerald-600 font-semibold underline">
                             {outlet.phone}
@@ -596,7 +619,7 @@ export const MobileSfaSimulator: React.FC = () => {
                       </div>
 
                       {isDone && outlet.orderTotal && (
-                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg shrink-0">
                           +{outlet.orderTotal.toLocaleString('vi-VN')} đ
                         </span>
                       )}
@@ -703,10 +726,20 @@ export const MobileSfaSimulator: React.FC = () => {
 
                 return (
                   <div key={item.productId} className="p-4 space-y-2 hover:bg-slate-50 transition">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-slate-900">{item.name}</span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center space-x-3 min-w-0">
+                        <img
+                          src={getProductImage(item.productId + ' ' + item.name)}
+                          alt={item.name}
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0 shadow-xs"
+                        />
+                        <div className="truncate">
+                          <span className="font-bold text-xs text-slate-900 block truncate">{item.name}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">Thùng 12 gói</span>
+                        </div>
+                      </div>
                       <span
-                        className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                        className={`px-2 py-0.5 rounded-md text-xs font-bold shrink-0 ${
                           rem > 3 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                         }`}
                       >
@@ -911,17 +944,24 @@ export const MobileSfaSimulator: React.FC = () => {
 
                 return (
                   <div key={item.productId} className="pt-3 first:pt-0 flex items-center justify-between gap-3">
-                    <div className="space-y-0.5 flex-1">
-                      <div className="font-bold text-xs text-slate-900">{item.name}</div>
-                      <div className="text-[11px] text-slate-500">
-                        Đơn giá: {Number(item.price || 0).toLocaleString('vi-VN')} đ/Thùng
-                      </div>
-                      <div
-                        className={`text-[10px] font-bold ${
-                          rem > 3 ? 'text-blue-600' : 'text-rose-600'
-                        }`}
-                      >
-                        Còn trên xe: {rem} Thùng
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <img
+                        src={getProductImage(item.productId + ' ' + item.name)}
+                        alt={item.name}
+                        className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0 shadow-xs"
+                      />
+                      <div className="space-y-0.5 truncate">
+                        <div className="font-bold text-xs text-slate-900 truncate">{item.name}</div>
+                        <div className="text-[11px] text-slate-500">
+                          Đơn giá: {Number(item.price || 0).toLocaleString('vi-VN')} đ/Thùng
+                        </div>
+                        <div
+                          className={`text-[10px] font-bold ${
+                            rem > 3 ? 'text-blue-600' : 'text-rose-600'
+                          }`}
+                        >
+                          Còn trên xe: {rem} Thùng
+                        </div>
                       </div>
                     </div>
 

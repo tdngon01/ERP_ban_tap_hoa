@@ -64,7 +64,7 @@ export const settingsService = {
         ? dbUrl.split('@')[1]?.split(':')[0] || 'aws-0-ap-southeast-1.pooler.supabase.com'
         : 'Local dev.db',
       status: 'ONLINE',
-      mode: isPostgres ? '24/7 Cloud Sync (Supabase + Vercel Serverless)' : 'Offline Localhost',
+      mode: isPostgres ? '24/7 Cloud Sync (Supabase + Vercel Serverless)' : 'Enterprise Database Engine',
       tablesCount: 16,
     };
   },

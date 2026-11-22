@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "He thong ERP & DMS Banh Keo FMCG (Web Client)",
-  "author": "Antigravity Team",
+  "author": "FMCG Distribution Systems",
   "scripts": {
     "dev": "vite --port 3000 --host",
     "build": "tsc && vite build",

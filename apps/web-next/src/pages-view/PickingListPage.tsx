@@ -14,6 +14,14 @@ import {
 import { getPickingList } from '../api';
 
 export const PickingListPage: React.FC = () => {
+  const getProductImage = (code?: string) => {
+    if (code?.includes('CHOCO')) return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100&q=80';
+    if (code?.includes('CUSTAS')) return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&q=80';
+    if (code?.includes('AFC')) return 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=100&q=80';
+    if (code?.includes('COSY')) return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&q=80';
+    if (code?.includes('OISHI')) return 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=100&q=80';
+    return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&q=80';
+  };
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
     totalOrdersCount: number;
@@ -151,7 +159,7 @@ export const PickingListPage: React.FC = () => {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-base font-black uppercase text-slate-900">
-                NHÀ PHÂN PHỐI BÁNH KẸO AN PHÁT - KHO TRUNG TÂM
+                NHÀ PHÂN PHỐI BÁNH KẸO KIM ĐÔ - KHO TRUNG TÂM
               </h1>
               <p className="text-xs text-slate-600">Phân hệ Kho bãi & Soạn hàng tập trung (Warehouse Picking)</p>
             </div>
@@ -201,7 +209,16 @@ export const PickingListPage: React.FC = () => {
                     <tr key={idx} className="hover:bg-slate-50/80">
                       <td className="py-3 px-2 text-center text-slate-500 font-semibold">{idx + 1}</td>
                       <td className="py-3 px-3 font-mono font-bold text-slate-800">{item.productCode}</td>
-                      <td className="py-3 px-3 font-semibold text-slate-900">{item.productName}</td>
+                      <td className="py-3 px-3 font-semibold text-slate-900">
+                        <div className="flex items-center space-x-2">
+                          <img
+                            src={getProductImage(item.productCode)}
+                            alt=""
+                            className="w-7 h-7 rounded-lg object-cover shrink-0 border border-slate-200"
+                          />
+                          <span>{item.productName}</span>
+                        </div>
+                      </td>
                       <td className="py-3 px-3 text-center font-bold text-amber-900 bg-amber-50/50 rounded">
                         {item.uomName}
                       </td>

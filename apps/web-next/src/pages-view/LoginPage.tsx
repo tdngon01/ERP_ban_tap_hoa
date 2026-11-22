@@ -1,7 +1,6 @@
 ﻿'use client';
 import React, { useState } from 'react';
 import {
-  Sparkles,
   Lock,
   User,
   Eye,
@@ -10,8 +9,9 @@ import {
   AlertCircle,
   ShieldCheck,
   CheckCircle2,
-  HardDrive,
-  Users,
+  Boxes,
+  Database,
+  KeyRound,
 } from 'lucide-react';
 import { login } from '../api';
 
@@ -27,41 +27,41 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const quickRoles = [
+  const sampleRoles = [
     {
       username: 'admin',
-      name: 'Chủ NPP / Giám Đốc',
-      badge: '👑 Toàn Quyền',
-      color: 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200',
-      desc: 'Quản trị toàn bộ ERP & KPI',
+      name: 'Trần Đại Nghĩa',
+      badge: '👑 Chủ NPP / Giám Đốc',
+      color: 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
     },
     {
       username: 'ketoan',
       name: 'Nguyễn Thu Hương',
-      badge: '💼 Kế Toán',
-      color: 'bg-blue-100 text-blue-900 border-blue-300 hover:bg-blue-200',
-      desc: 'Sổ nợ VietQR, duyệt đơn hàng',
+      badge: '💼 Kế Toán Trưởng',
+      color: 'bg-blue-50 text-blue-900 border-blue-200 hover:bg-blue-100',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&q=80',
     },
     {
       username: 'thukho',
       name: 'Trần Văn Khoa',
-      badge: '📦 Thủ Kho',
-      color: 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200',
-      desc: 'Lô FEFO & Bảng kê xe tải',
+      badge: '📦 Thủ Kho Vận',
+      color: 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
     },
     {
       username: 'giamsat',
       name: 'Lê Hoàng Nam',
-      badge: '🗺️ Giám Sát',
-      color: 'bg-purple-100 text-purple-900 border-purple-300 hover:bg-purple-200',
-      desc: 'Tuyến MCP T2-T7 & Báo cáo GPS',
+      badge: '🗺️ Giám Sát Tuyến',
+      color: 'bg-purple-50 text-purple-900 border-purple-200 hover:bg-purple-100',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80',
     },
     {
       username: 'sale01',
       name: 'Nguyễn Văn Hùng',
-      badge: '📱 Van Sales',
-      color: 'bg-teal-100 text-teal-900 border-teal-300 hover:bg-teal-200',
-      desc: 'Ứng dụng Mobile SFA & Mở tiệm',
+      badge: '📱 Sale Thị Trường',
+      color: 'bg-teal-50 text-teal-900 border-teal-200 hover:bg-teal-100',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&q=80',
     },
   ];
 
@@ -102,195 +102,208 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleQuickLogin = (uname: string) => {
-    setUsername(uname);
-    setPassword('123456');
-    handleLogin(undefined, uname, '123456');
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 flex flex-col justify-center items-center p-4">
-      {/* Container */}
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-700/50">
-        {/* Left Side: Brand & Feature Highlights */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800">
-          <div>
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                <Sparkles className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+      <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-200">
+        {/* CỘT TRÁI: HERO BANNER DOANH NGHIỆP */}
+        <div className="lg:col-span-5 relative bg-slate-900 text-white p-8 flex flex-col justify-between overflow-hidden">
+          {/* Background Image Warehouse with overlay */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&q=80')",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-900/90 to-slate-950" />
+
+          {/* Nội dung bên trên */}
+          <div className="relative z-10 space-y-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <Boxes className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-lg text-white tracking-wide">ERP FMCG</h1>
-                <p className="text-xs text-amber-400 font-medium">Bánh Kẹo & Tạp Hóa DMS</p>
+                <h1 className="font-extrabold text-base tracking-wider text-white uppercase">
+                  KIM ĐÔ FMCG ERP
+                </h1>
+                <p className="text-[11px] text-emerald-400 font-semibold tracking-wide">
+                  Distribution Enterprise
+                </p>
               </div>
             </div>
 
-            <h2 className="text-xl font-extrabold text-white leading-tight mb-2">
-              Hệ Thống Quản Trị & Phân Phối Toàn Diện
-            </h2>
-            <p className="text-xs text-slate-300 leading-relaxed mb-6">
-              Tối ưu cho Nhà Phân Phối bánh kẹo: Quản lý đa ĐVT, kho hạn sử dụng FEFO, bảng kê soạn hàng xe tải, giám sát tuyến MCP và gạch nợ VietQR tự động.
-            </p>
+            <div>
+              <h2 className="text-xl font-black text-white leading-snug">
+                Hệ Thống Quản Trị & Phân Phối Bánh Kẹo Doanh Nghiệp
+              </h2>
+              <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                Giải pháp số hóa toàn diện: Quản trị kho hạn sử dụng FEFO, bảng kê soạn hàng xe tải, giám sát tuyến bán hàng MCP và gạch nợ VietQR tự động.
+              </p>
+            </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 pt-2">
               <div className="flex items-start space-x-2.5 text-xs text-slate-200">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>
-                  <strong>Phân quyền RBAC 5 vai trò</strong> (Chủ NPP, Kế toán, Thủ kho, Giám sát, Van Sales)
-                </span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>Phân quyền 5 vai trò (Chủ NPP, Kế toán, Thủ kho, Giám sát, Sales)</span>
               </div>
               <div className="flex items-start space-x-2.5 text-xs text-slate-200">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>
-                  <strong>Thuật toán FEFO</strong> tự động gợi ý xuất lô cận date trước
-                </span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>Thuật toán FEFO bốc lô cận date tự động, chống hết hạn kho bãi</span>
               </div>
               <div className="flex items-start space-x-2.5 text-xs text-slate-200">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>
-                  <strong>Sổ nợ gối đầu & mã VietQR động</strong> chuẩn Napas 247
-                </span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>Gạch nợ VietQR Napas 247 và đồng bộ hai chiều Google Sheets</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-6 mt-6 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          {/* Footer bên trái */}
+          <div className="relative z-10 pt-6 mt-6 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
             <span className="flex items-center space-x-1.5">
-              <HardDrive className="w-3.5 h-3.5 text-amber-400" />
-              <span>NPP An Phát</span>
+              <Database className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Supabase Cloud PostgreSQL</span>
             </span>
-            <span className="text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60">
-              Desktop Offline & Cloud
+            <span className="text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800/60">
+              Vercel Serverless
             </span>
           </div>
         </div>
 
-        {/* Right Side: Login Form & Quick 1-Click Demo */}
+        {/* CỘT PHẢI: FORM ĐĂNG NHẬP CHUẨN DOANH NGHIỆP */}
         <div className="lg:col-span-7 p-8 flex flex-col justify-between bg-white">
           <div>
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Đăng Nhập Hệ Thống</h3>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Đăng Nhập Hệ Thống</h3>
               <p className="text-xs text-slate-500 mt-1">
-                Nhập tên đăng nhập và mật khẩu được cấp hoặc chọn tài khoản mẫu bên dưới
+                Nhập tài khoản và mật khẩu được cấp để truy cập vào hệ thống ERP
               </p>
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 flex items-center space-x-2 animate-in fade-in">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center space-x-2 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{error}</span>
               </div>
             )}
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">
                   Tên Đăng Nhập (Username)
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                  <User className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Ví dụ: admin, ketoan, thukho..."
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium text-slate-900"
+                    placeholder="Nhập tên đăng nhập..."
+                    className="w-full pl-10 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-900 transition"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">
                   Mật Khẩu
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                  <Lock className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Nhập mật khẩu..."
-                    className="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium text-slate-900"
+                    className="w-full pl-10 pr-10 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-900 transition"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 focus:outline-none"
-                    title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 focus:outline-none"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <label className="flex items-center space-x-2 text-slate-600 cursor-pointer">
+              <div className="flex items-center justify-between text-xs pt-1">
+                <label className="flex items-center space-x-2 cursor-pointer text-slate-600">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded text-amber-500 focus:ring-amber-500"
+                    className="rounded text-emerald-600 focus:ring-emerald-500"
                   />
                   <span>Ghi nhớ phiên đăng nhập</span>
                 </label>
-                <span className="text-slate-400 text-[11px]">
-                  Bảo mật SSL 256-bit
-                </span>
+                <span className="text-[11px] text-slate-400">Mật khẩu mặc định: 123456</span>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-lg text-sm transition shadow-md shadow-amber-500/20 flex items-center justify-center space-x-2"
+                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center space-x-2 disabled:opacity-50"
               >
-                <span>{loading ? 'Đang xác thực...' : 'Đăng Nhập Vào Hệ Thống'}</span>
-                {!loading && <ArrowRight className="w-4 h-4" />}
+                {loading ? (
+                  <span>Đang xác thực thông tin...</span>
+                ) : (
+                  <>
+                    <span>ĐĂNG NHẬP VÀO HỆ THỐNG</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
+
+            {/* CHỌN TÀI KHOẢN VẬN HÀNH NHANH */}
+            <div className="mt-6 pt-5 border-t border-slate-100">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
+                <span>Chọn nhanh vai trò vận hành:</span>
+                <span className="text-[10px] text-emerald-600 font-semibold">5 Phân Quyền</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {sampleRoles.map((role) => (
+                  <button
+                    key={role.username}
+                    type="button"
+                    onClick={() => {
+                      setUsername(role.username);
+                      setPassword('123456');
+                      handleLogin(undefined, role.username, '123456');
+                    }}
+                    className={`p-2 rounded-xl border text-left transition flex items-center space-x-2.5 ${role.color}`}
+                  >
+                    <img
+                      src={role.avatar}
+                      alt={role.name}
+                      className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-black/10"
+                    />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold truncate text-slate-900">{role.name}</div>
+                      <div className="text-[10px] text-slate-500 truncate">{role.badge}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Hướng dẫn vai trò & Bảo mật Doanh nghiệp */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
-              <div className="flex items-center space-x-1">
-                <Users className="w-3.5 h-3.5 text-amber-500" />
-                <span>Các Vai Trò Được Phân Quyền</span>
-              </div>
-              <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                RBAC 5 Cấp
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {quickRoles.map((r) => (
-                <button
-                  key={r.username}
-                  type="button"
-                  onClick={() => {
-                    setUsername(r.username);
-                    setPassword('');
-                  }}
-                  title="Nhấp để điền tên đăng nhập"
-                  className={`p-2 rounded-lg border text-left transition text-xs hover:border-slate-400 bg-white`}
-                >
-                  <div className="font-bold flex items-center justify-between text-slate-800">
-                    <span>{r.badge}</span>
-                  </div>
-                  <div className="text-[10px] text-slate-500 font-mono mt-0.5">@{r.username}</div>
-                  <div className="text-[9px] text-slate-400 truncate mt-0.5">{r.desc}</div>
-                </button>
-              ))}
-            </div>
-
-            <p className="text-[10px] text-slate-400 text-center mt-3">
-              Mật khẩu khởi tạo ban đầu: <code className="font-bold text-slate-600">123456</code> (Vui lòng đổi mật khẩu sau lần đăng nhập đầu tiên)
-            </p>
+          {/* TIÊU CHUẨN BẢO MẬT DOANH NGHIỆP */}
+          <div className="pt-4 mt-4 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+            <span className="flex items-center space-x-1">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Mã hóa Scrypt + Salted Hash</span>
+            </span>
+            <span className="font-mono text-slate-400 text-[10px]">JWT HMAC-SHA256</span>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default LoginPage;

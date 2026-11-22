@@ -3,6 +3,26 @@ import React, { useEffect, useState } from 'react';
 import { Package, Search, Plus, Calculator, Check, ArrowRight } from 'lucide-react';
 import { getProducts, convertUom } from '../api';
 
+const PRODUCT_CATEGORY_IMAGES: Record<string, string> = {
+  CHOCO: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&q=80',
+  CUSTAS: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&q=80',
+  AFC: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=300&q=80',
+  COSY: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=300&q=80',
+  OISHI: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300&q=80',
+  DEFAULT: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=300&q=80',
+};
+
+const getProductImage = (p: any) => {
+  if (p.imageUrl && p.imageUrl.startsWith('http')) return p.imageUrl;
+  const upper = (p.code + ' ' + p.name).toUpperCase();
+  if (upper.includes('CHOCO')) return PRODUCT_CATEGORY_IMAGES.CHOCO;
+  if (upper.includes('CUSTAS')) return PRODUCT_CATEGORY_IMAGES.CUSTAS;
+  if (upper.includes('AFC')) return PRODUCT_CATEGORY_IMAGES.AFC;
+  if (upper.includes('COSY')) return PRODUCT_CATEGORY_IMAGES.COSY;
+  if (upper.includes('OISHI') || upper.includes('SNACK') || upper.includes('BIM')) return PRODUCT_CATEGORY_IMAGES.OISHI;
+  return PRODUCT_CATEGORY_IMAGES.DEFAULT;
+};
+
 export const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [search, setSearch] = useState('');
@@ -110,9 +130,9 @@ export const ProductsPage: React.FC = () => {
                 }`}
               >
                 <img
-                  src={p.imageUrl || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=150'}
+                  src={getProductImage(p)}
                   alt={p.name}
-                  className="w-24 h-24 object-cover rounded-lg border border-slate-100 flex-shrink-0"
+                  className="w-24 h-24 object-cover rounded-lg border border-slate-100 flex-shrink-0 shadow-xs"
                 />
 
                 <div className="flex-1">

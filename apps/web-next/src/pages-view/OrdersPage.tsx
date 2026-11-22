@@ -27,6 +27,15 @@ import {
 import { InvoiceModal } from '../components/InvoiceModal';
 
 export const OrdersPage: React.FC<{ onNavigateToQr?: (outletId: string, orderId: string, amount: number) => void }> = ({ onNavigateToQr }) => {
+  const getProductImage = (code?: string) => {
+    if (code?.includes('CHOCO')) return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100&q=80';
+    if (code?.includes('CUSTAS')) return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&q=80';
+    if (code?.includes('AFC')) return 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=100&q=80';
+    if (code?.includes('COSY')) return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&q=80';
+    if (code?.includes('OISHI')) return 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=100&q=80';
+    return 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&q=80';
+  };
+
   const [orders, setOrders] = useState<any[]>([]);
   const [promotions, setPromotions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,7 +125,7 @@ export const OrdersPage: React.FC<{ onNavigateToQr?: (outletId: string, orderId:
         salesRepName,
         orderType,
         items: orderItems,
-        notes: 'Đơn tạo từ Desktop App ERP FMCG',
+        notes: 'Đơn tạo từ Web ERP Doanh Nghiệp',
       });
       alert(res.message);
       setShowCreateModal(false);
@@ -310,14 +319,19 @@ export const OrdersPage: React.FC<{ onNavigateToQr?: (outletId: string, orderId:
                   Chi Tiết Mặt Hàng & Phân Bổ Lô FEFO:
                 </div>
                 {(order.items || []).map((item: any) => (
-                  <div key={item.id} className="flex items-center justify-between text-xs py-1 border-b border-slate-200/50 last:border-0">
-                    <div className="flex items-center space-x-2">
+                  <div key={item.id} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-200/50 last:border-0">
+                    <div className="flex items-center space-x-2.5">
+                      <img
+                        src={getProductImage(item.product?.code)}
+                        alt={item.product?.name}
+                        className="w-7 h-7 rounded-lg object-cover shrink-0 border border-slate-200"
+                      />
                       {item.isGiftItem ? (
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 flex items-center">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 flex items-center">
                           <Gift className="w-3 h-3 mr-0.5" /> TẶNG KM
                         </span>
                       ) : (
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
                           BÁN
                         </span>
                       )}

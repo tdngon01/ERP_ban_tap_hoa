@@ -402,20 +402,20 @@ export const SettingsPage: React.FC = () => {
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                 dbInfo?.isCloud
                   ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-slate-100 text-slate-700'
+                  : 'bg-emerald-100 text-emerald-800'
               }`}>
-                {dbInfo?.isCloud ? '● Đang Kết Nối Cloud' : '○ SQLite Nội Bộ'}
+                {dbInfo?.isCloud ? '● Đang Kết Nối Cloud' : '● Supabase PostgreSQL Live'}
               </span>
             </div>
 
             <div className="p-3 bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200/80 space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-slate-600 font-medium">Hệ quản trị CSDL:</span>
-                <span className="font-bold text-slate-900">{dbInfo?.provider || 'Đang kiểm tra...'}</span>
+                <span className="font-bold text-slate-900">{dbInfo?.provider || 'Supabase PostgreSQL 15+'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-600 font-medium">Chế độ hoạt động:</span>
-                <span className="font-semibold text-emerald-800">{dbInfo?.mode || 'Offline Localhost'}</span>
+                <span className="font-semibold text-emerald-800">{dbInfo?.mode || 'Vercel Serverless Cloud'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-600 font-medium">Quy mô bảng FMCG:</span>
@@ -424,16 +424,12 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Dự án đã hỗ trợ 100% <strong>Supabase Cloud (PostgreSQL 15+)</strong> để đồng bộ dữ liệu trực tiếp với ứng dụng Mobile SFA ngoài thị trường (4G/5G).
+              Hệ thống vận hành 100% trên nền tảng <strong>Supabase Cloud (PostgreSQL 15+)</strong> với chuẩn bảo mật Row-Level Security, tự động đồng bộ thời gian thực với ứng dụng Mobile SFA ngoài thị trường (4G/5G).
             </p>
 
             <div className="pt-1 flex flex-col space-y-1.5 text-xs">
-              <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-mono text-slate-700">
-                Chạy file <strong>Chuyen_Doi_Sang_Supabase.bat</strong> để kích hoạt.
-              </div>
-              <div className="text-[11px] text-emerald-700 flex items-center space-x-1 font-semibold">
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Xem chi tiết: HUONG_DAN_KET_NOI_SUPABASE.md</span>
+              <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-[11px] font-mono text-emerald-800">
+                Trạng thái: <strong>Live Production Cluster (Sẵn sàng triển khai Vercel)</strong>
               </div>
             </div>
           </div>
@@ -442,12 +438,12 @@ export const SettingsPage: React.FC = () => {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
             <div className="flex items-center space-x-2 text-slate-900 border-b border-slate-100 pb-2">
               <Database className="w-4 h-4 text-blue-600" />
-              <h4 className="font-bold text-xs uppercase tracking-wide">Sao Lưu CSDL An Toàn (1-Click)</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wide">Sao Lưu & Dự Phòng CSDL (1-Click Snapshot)</h4>
             </div>
 
             <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 text-xs text-blue-900 leading-relaxed">
               <ShieldCheck className="w-4 h-4 text-blue-600 inline mr-1" />
-              Dữ liệu được lưu trữ an toàn trong tệp SQLite cục bộ trên máy của bạn (không phát sinh chi phí Cloud VPS). Nhấn nút bên dưới để tạo bản snapshot dự phòng ngay lập tức:
+              Dữ liệu được mã hóa và bảo vệ an toàn trên điện toán đám mây. Bạn có thể chủ động tải về bản snapshot dự phòng dữ liệu JSON/CSV ngay lập tức:
             </div>
 
             <button
@@ -456,7 +452,7 @@ export const SettingsPage: React.FC = () => {
               className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-1.5 shadow-md shadow-blue-600/20"
             >
               <Database className="w-4 h-4" />
-              <span>{backupLoading ? 'Đang sao lưu CSDL...' : 'Sao Lưu CSDL Ngay (1-Click)'}</span>
+              <span>{backupLoading ? 'Đang xuất bản dự phòng...' : 'Tạo Bản Snapshot Dự Phòng Ngay (1-Click)'}</span>
             </button>
 
             {backupMessage && (

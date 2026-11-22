@@ -29,6 +29,16 @@ import {
 import { getOutlets, getOutletDetail, createOutlet, updateOutlet, getRoutes } from '../api';
 
 export const OutletsPage: React.FC = () => {
+  const STORE_PHOTOS = [
+    'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=300&q=80',
+    'https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=300&q=80',
+    'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?w=300&q=80',
+    'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=300&q=80',
+    'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&q=80',
+    'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=300&q=80',
+    'https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?w=300&q=80',
+  ];
+
   const [outlets, setOutlets] = useState<any[]>([]);
   const [routes, setRoutes] = useState<any[]>([]);
   const [search, setSearch] = useState('');
@@ -414,31 +424,39 @@ export const OutletsPage: React.FC = () => {
             Không tìm thấy khách hàng nào phù hợp với bộ lọc.
           </div>
         ) : (
-          filteredOutlets.map((outlet) => {
+          filteredOutlets.map((outlet, idx) => {
             const usagePercent = outlet.creditLimit > 0
               ? Math.round((outlet.currentDebt / outlet.creditLimit) * 100)
               : 0;
 
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${outlet.latitude},${outlet.longitude}`;
+            const storeImg = STORE_PHOTOS[idx % STORE_PHOTOS.length];
 
             return (
               <div
                 key={outlet.id}
-                className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition space-y-3 flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition space-y-3 flex flex-col justify-between"
               >
                 <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">
-                        {outlet.code}
-                      </span>
-                      <h3 className="text-base font-bold text-slate-900 mt-1">{outlet.name}</h3>
-                      <p className="text-xs text-slate-500">
-                        Chủ tiệm: <strong className="text-slate-700">{outlet.ownerName}</strong>
-                      </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start space-x-3 min-w-0">
+                      <img
+                        src={storeImg}
+                        alt={outlet.name}
+                        className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-100 shadow-xs"
+                      />
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">
+                          {outlet.code}
+                        </span>
+                        <h3 className="text-sm font-bold text-slate-900 mt-1 truncate">{outlet.name}</h3>
+                        <p className="text-xs text-slate-500 truncate">
+                          Chủ: <strong className="text-slate-700">{outlet.ownerName}</strong>
+                        </p>
+                      </div>
                     </div>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ${
                         outlet.tier === 'VIP'
                           ? 'bg-amber-100 text-amber-800 border border-amber-300'
                           : outlet.tier === 'GOLD'
