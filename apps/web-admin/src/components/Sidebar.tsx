@@ -13,15 +13,24 @@ import {
   Sparkles,
   ClipboardList,
   Settings,
+  ShieldCheck,
+  User,
 } from 'lucide-react';
 
 interface SidebarProps {
   currentTab: string;
   onSelectTab: (tab: string) => void;
+  currentUser?: any;
+  allowedTabs?: string[];
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => {
-  const menuItems = [
+export const Sidebar: React.FC<SidebarProps> = ({
+  currentTab,
+  onSelectTab,
+  currentUser,
+  allowedTabs,
+}) => {
+  const allMenuItems = [
     { id: 'dashboard', label: 'Tổng Quan & KPI', icon: LayoutDashboard, badge: 'Live' },
     { id: 'products', label: 'Bánh Kẹo & Đa ĐVT', icon: Package },
     { id: 'inventory', label: 'Kho & Lô HSD (FEFO)', icon: Layers, highlight: true },
@@ -31,9 +40,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     { id: 'orders', label: 'Đơn Hàng & Khuyến Mãi', icon: ShoppingCart },
     { id: 'debt', label: 'Công Nợ & VietQR', icon: QrCode },
     { id: 'google-sheets', label: 'Đồng Bộ Google Sheets', icon: FileSpreadsheet, badge: 'API' },
+    { id: 'users', label: 'Tài Khoản & Phân Quyền', icon: ShieldCheck, badge: 'RBAC' },
     { id: 'settings', label: 'Cài Đặt & Sao Lưu DB', icon: Settings },
     { id: 'mobile-sfa', label: 'Giả Lập Mobile Sale SFA', icon: Smartphone, special: true },
   ];
+
+  // Lọc menu theo phân quyền RBAC của người dùng đang đăng nhập
+  const menuItems = allMenuItems.filter((item) => {
+    if (!allowedTabs || allowedTabs.length === 0) return true;
+    return allowedTabs.includes(item.id);
+  });
 
   return (
     <aside className="w-64 bg-slate-900 text-slate-200 flex flex-col h-screen fixed left-0 top-0 z-30 shadow-xl border-r border-slate-800">
@@ -50,8 +66,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
-        <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-          Phân Hệ Quản Trị
+        <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase flex items-center justify-between">
+          <span>Phân Hệ Cho Phép</span>
+          <span className="text-[10px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded font-mono">
+            {menuItems.length}
+          </span>
         </div>
 
         {menuItems.map((item) => {
@@ -71,14 +90,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
               }`}
             >
               <div className="flex items-center space-x-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : item.special ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <Icon
+                  className={`w-4 h-4 ${
+                    isActive
+                      ? 'text-slate-950'
+                      : item.special
+                      ? 'text-emerald-400'
+                      : item.id === 'users'
+                      ? 'text-amber-400'
+                      : 'text-slate-400'
+                  }`}
+                />
                 <span>{item.label}</span>
               </div>
 
               {item.badge && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  isActive ? 'bg-slate-950 text-amber-400' : 'bg-slate-800 text-amber-400 border border-slate-700'
-                }`}>
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    isActive
+                      ? 'bg-slate-950 text-amber-400'
+                      : 'bg-slate-800 text-amber-400 border border-slate-700'
+                  }`}
+                >
                   {item.badge}
                 </span>
               )}
@@ -87,8 +120,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
         })}
       </nav>
 
+      {/* Current User Role Info */}
+      {currentUser && (
+        <div className="px-4 py-3 border-t border-slate-800 bg-slate-950/70">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 font-bold flex items-center justify-center text-xs">
+              {currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold text-white truncate">
+                {currentUser.fullName || currentUser.username}
+              </div>
+              <div className="text-[10px] text-amber-400 font-mono truncate">
+                {currentUser.role}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Footer Info */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400">
+      <div className="p-3 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400">
         <div className="flex items-center justify-between mb-1">
           <span className="font-medium text-slate-300">NPP An Phát</span>
           <span className="flex items-center space-x-1.5 text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60">
@@ -96,9 +148,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             <span>Desktop Offline</span>
           </span>
         </div>
-        <p className="text-[11px] text-slate-500">SQLite Nội Bộ • 0đ Chi Phí Máy Chủ</p>
+        <p className="text-[11px] text-slate-500">Phân Quyền RBAC FMCG • Chuẩn An Ninh</p>
       </div>
     </aside>
   );
 };
-
+export default Sidebar;

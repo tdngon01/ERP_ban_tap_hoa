@@ -8,6 +8,8 @@ import {
   Receipt,
   Search,
   ExternalLink,
+  ShieldAlert,
+  Filter,
 } from 'lucide-react';
 import { getDebtLedger, generateVietQr, recordPayment, getPaymentReceipts } from '../api';
 
@@ -16,6 +18,8 @@ export const DebtVietQrPage: React.FC<{ preselect?: { outletId: string; orderId?
   const [receipts, setReceipts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'ledger' | 'receipts'>('ledger');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [riskFilter, setRiskFilter] = useState<'ALL' | 'DANGER' | 'WARNING' | 'SAFE' | 'DEBT_ONLY'>('ALL');
 
   // VietQR Modal State
   const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -93,6 +97,31 @@ export const DebtVietQrPage: React.FC<{ preselect?: { outletId: string; orderId?
     }
   };
 
+  const totalDebt = ledger.reduce((s, r) => s + (r.currentDebt || 0), 0);
+  const totalOverdue = ledger.reduce((s, r) => s + (r.overdueDebt || 0), 0);
+  const dangerCount = ledger.filter((r) => r.riskLevel === 'DANGER').length;
+  const warningCount = ledger.filter((r) => r.riskLevel === 'WARNING').length;
+  const inDebtCount = ledger.filter((r) => r.currentDebt > 0).length;
+
+  const filteredLedger = ledger.filter((row) => {
+    if (riskFilter === 'DANGER' && row.riskLevel !== 'DANGER') return false;
+    if (riskFilter === 'WARNING' && row.riskLevel !== 'WARNING') return false;
+    if (riskFilter === 'SAFE' && (row.riskLevel !== 'SAFE' || row.currentDebt <= 0)) return false;
+    if (riskFilter === 'DEBT_ONLY' && row.currentDebt <= 0) return false;
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      const match =
+        row.name?.toLowerCase().includes(q) ||
+        row.ownerName?.toLowerCase().includes(q) ||
+        row.phone?.toLowerCase().includes(q) ||
+        row.routeName?.toLowerCase().includes(q) ||
+        row.code?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       {/* Tab Switcher */}
@@ -118,6 +147,141 @@ export const DebtVietQrPage: React.FC<{ preselect?: { outletId: string; orderId?
         </button>
       </div>
 
+      {activeTab === 'ledger' && (
+        <>
+          {/* THAM KHẢO PHẦN MỀM CHUYÊN NGHIỆP: 4 Thẻ Phân Tích Tuổi Nợ & Rủi Ro Công Nợ (Debt Aging Cards) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tổng Nợ Gối Đầu</span>
+                <div className="text-xl font-bold text-slate-900 mt-1 font-mono">
+                  {totalDebt.toLocaleString('vi-VN')} đ
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">
+                  Có <strong className="text-slate-800">{inDebtCount}</strong> tiệm đang có nợ
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <DollarSign className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-rose-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Nợ Quá Hạn &gt;30 Ngày</span>
+                <div className="text-xl font-bold text-rose-600 mt-1 font-mono">
+                  {totalOverdue.toLocaleString('vi-VN')} đ
+                </div>
+                <div className="text-[10px] text-rose-700 font-semibold mt-0.5">
+                  {dangerCount} tiệm có nguy cơ nợ xấu
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-amber-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Cảnh Báo Hạn Mức</span>
+                <div className="text-xl font-bold text-amber-800 mt-1">
+                  {warningCount} tiệm
+                </div>
+                <div className="text-[10px] text-amber-600 font-medium mt-0.5">
+                  Dư nợ đạt &ge; 70% hạn mức gối đầu
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-emerald-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Thu Nợ Tức Thì</span>
+                <div className="text-xl font-bold text-emerald-800 mt-1">
+                  VietQR 24/7
+                </div>
+                <div className="text-[10px] text-emerald-600 font-medium mt-0.5">
+                  Gạch nợ tự động không cần tiền mặt
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <QrCode className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Tìm tên tiệm tạp hóa, chủ tiệm, SĐT, tuyến đường..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-1 overflow-x-auto text-xs">
+              <span className="text-slate-400 text-[11px] font-bold uppercase flex items-center mr-1">
+                <Filter className="w-3 h-3 mr-1" /> Lọc:
+              </span>
+              <button
+                onClick={() => setRiskFilter('ALL')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition whitespace-nowrap ${
+                  riskFilter === 'ALL'
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                Tất Cả ({ledger.length})
+              </button>
+              <button
+                onClick={() => setRiskFilter('DEBT_ONLY')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition whitespace-nowrap ${
+                  riskFilter === 'DEBT_ONLY'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-blue-50 text-blue-800 hover:bg-blue-100'
+                }`}
+              >
+                Đang Có Nợ ({inDebtCount})
+              </button>
+              <button
+                onClick={() => setRiskFilter('DANGER')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition whitespace-nowrap ${
+                  riskFilter === 'DANGER'
+                    ? 'bg-rose-600 text-white'
+                    : 'bg-rose-50 text-rose-800 hover:bg-rose-100'
+                }`}
+              >
+                Quá Hạn ({dangerCount})
+              </button>
+              <button
+                onClick={() => setRiskFilter('WARNING')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition whitespace-nowrap ${
+                  riskFilter === 'WARNING'
+                    ? 'bg-amber-500 text-slate-950'
+                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                }`}
+              >
+                Cảnh Báo ({warningCount})
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {activeTab === 'ledger' ? (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -138,12 +302,12 @@ export const DebtVietQrPage: React.FC<{ preselect?: { outletId: string; orderId?
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-slate-500">Đang tải sổ cái công nợ...</td>
                   </tr>
-                ) : ledger.length === 0 ? (
+                ) : filteredLedger.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">Không có công nợ nào.</td>
+                    <td colSpan={7} className="py-8 text-center text-slate-400">Không tìm thấy điểm bán nào khớp với bộ lọc tìm kiếm!</td>
                   </tr>
                 ) : (
-                  ledger.map((row) => (
+                  filteredLedger.map((row) => (
                     <tr key={row.outletId} className="hover:bg-slate-50 transition">
                       <td className="py-3.5 px-4 font-bold text-slate-900">
                         <div>{row.name}</div>

@@ -171,5 +171,84 @@ export class RoutesService {
       take: limit,
     });
   }
+
+  /**
+   * Tạo Tuyến bán hàng mới
+   */
+  async createRoute(data: {
+    code?: string;
+    name: string;
+    dayOfWeek: string;
+    salesRepName?: string;
+  }) {
+    let code = data.code;
+    if (!code) {
+      const count = await this.prisma.route.count();
+      code = `RO-${String(count + 1).padStart(3, '0')}`;
+    }
+
+    return this.prisma.route.create({
+      data: {
+        code,
+        name: data.name,
+        dayOfWeek: data.dayOfWeek,
+        salesRepName: data.salesRepName || 'Nguyễn Văn Hùng',
+      },
+      include: { outlets: true },
+    });
+  }
+
+  /**
+   * Cập nhật thông tin Tuyến bán hàng
+   */
+  async updateRoute(id: string, data: any) {
+    return this.prisma.route.update({
+      where: { id },
+      data: {
+        name: data.name,
+        dayOfWeek: data.dayOfWeek,
+        salesRepName: data.salesRepName,
+      },
+      include: { outlets: true },
+    });
+  }
+
+  /**
+   * Xóa tuyến bán hàng
+   */
+  async deleteRoute(id: string) {
+    await this.prisma.outlet.updateMany({
+      where: { routeId: id },
+      data: { routeId: null },
+    });
+    return this.prisma.route.delete({ where: { id } });
+  }
+
+  /**
+   * Gán hàng loạt điểm bán vào tuyến bán hàng
+   */
+  async assignOutletsToRoute(routeId: string, outletIds: string[]) {
+    // Bỏ gán các điểm bán cũ thuộc tuyến này nếu không còn trong danh sách
+    await this.prisma.outlet.updateMany({
+      where: {
+        routeId,
+        id: { notIn: outletIds },
+      },
+      data: { routeId: null },
+    });
+
+    // Gán các điểm bán trong danh sách vào tuyến này
+    if (outletIds.length > 0) {
+      await this.prisma.outlet.updateMany({
+        where: { id: { in: outletIds } },
+        data: { routeId },
+      });
+    }
+
+    return this.prisma.route.findUnique({
+      where: { id: routeId },
+      include: { outlets: true },
+    });
+  }
 }
 

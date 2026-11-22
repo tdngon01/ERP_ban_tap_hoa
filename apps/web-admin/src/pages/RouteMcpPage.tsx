@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Navigation, User, Calendar, CheckCircle2, AlertTriangle, Image as ImageIcon, Clock } from 'lucide-react';
+import {
+  MapPin,
+  Navigation,
+  User,
+  Calendar,
+  CheckCircle2,
+  AlertTriangle,
+  Image as ImageIcon,
+  Clock,
+  Sparkles,
+} from 'lucide-react';
 import { getRoutes, getTodayMcp, getVisitHistory } from '../api';
+import { InteractiveRouteMap } from '../components/InteractiveRouteMap';
 
 export const RouteMcpPage: React.FC = () => {
   const [routes, setRoutes] = useState<any[]>([]);
   const [todayMcp, setTodayMcp] = useState<any>(null);
   const [visits, setVisits] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'routes' | 'history'>('routes');
+  const [activeTab, setActiveTab] = useState<'map' | 'routes' | 'history'>('map');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,6 +47,21 @@ export const RouteMcpPage: React.FC = () => {
       {/* Navigation Sub-tabs */}
       <div className="flex items-center space-x-2 border-b border-slate-200 pb-3">
         <button
+          onClick={() => setActiveTab('map')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 ${
+            activeTab === 'map'
+              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <MapPin className="w-4 h-4" />
+          <span>Bản Đồ Tuyến & Điểm Bán (OpenStreetMap Free)</span>
+          <span className="text-[10px] bg-slate-900 text-amber-400 font-bold px-1.5 py-0.2 rounded ml-1">
+            0đ Phí
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('routes')}
           className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 ${
             activeTab === 'routes'
@@ -44,7 +70,7 @@ export const RouteMcpPage: React.FC = () => {
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>Kế Hoạch Tuyến Bán Hàng (MCP T2 - T7)</span>
+          <span>Danh Sách Tuyến Bán Hàng (MCP T2 - T7)</span>
         </button>
 
         <button
@@ -60,7 +86,11 @@ export const RouteMcpPage: React.FC = () => {
         </button>
       </div>
 
-      {activeTab === 'routes' ? (
+      {/* Tab 1: Bản Đồ Tương Tác OpenStreetMap (100% Miễn Phí) */}
+      {activeTab === 'map' && <InteractiveRouteMap />}
+
+      {/* Tab 2: Danh Sách Tuyến & Điểm Bán */}
+      {activeTab === 'routes' && (
         <div className="space-y-6">
           {/* Today MCP Notification Banner */}
           {todayMcp && (
@@ -71,7 +101,13 @@ export const RouteMcpPage: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-amber-900">
-                    Lịch trình đi tuyến hôm nay: Thứ {todayMcp.dayOfWeek === 'MONDAY' ? 'Hai' : todayMcp.dayOfWeek === 'TUESDAY' ? 'Ba' : todayMcp.dayOfWeek} ({todayMcp.date})
+                    Lịch trình đi tuyến hôm nay: Thứ{' '}
+                    {todayMcp.dayOfWeek === 'MONDAY'
+                      ? 'Hai'
+                      : todayMcp.dayOfWeek === 'TUESDAY'
+                      ? 'Ba'
+                      : todayMcp.dayOfWeek}{' '}
+                    ({todayMcp.date})
                   </h4>
                   <p className="text-xs text-amber-700 mt-0.5">
                     Hệ thống tự động kích hoạt danh sách điểm bán tạp hóa tương ứng trên ứng dụng di động của Sale thị trường.
@@ -84,7 +120,10 @@ export const RouteMcpPage: React.FC = () => {
           {/* Routes Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {routes.map((route) => (
-              <div key={route.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+              <div
+                key={route.id}
+                className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4"
+              >
                 <div className="flex items-start justify-between">
                   <div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">
@@ -99,37 +138,36 @@ export const RouteMcpPage: React.FC = () => {
 
                 <div className="flex items-center space-x-2 text-xs text-slate-600">
                   <User className="w-4 h-4 text-slate-400" />
-                  <span>Sale phụ trách: <strong className="text-slate-800">{route.salesRepName}</strong></span>
-                  {route.salesRepPhone && <span>({route.salesRepPhone})</span>}
+                  <span>
+                    Nhân viên phụ trách: <strong>{route.salesRepName || 'Chưa phân bổ'}</strong>
+                  </span>
                 </div>
 
-                {/* Danh sách các điểm tạp hóa trong tuyến */}
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <div className="text-xs font-semibold text-slate-500 flex justify-between">
-                    <span>Điểm bán trong tuyến:</span>
-                    <span className="font-bold text-slate-800">{route.outlets?.length || 0} tiệm tạp hóa</span>
+                <div className="border-t border-slate-100 pt-3">
+                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+                    <span className="font-semibold">Điểm bán trên tuyến ({route.outlets?.length || 0})</span>
+                    <button
+                      onClick={() => setActiveTab('map')}
+                      className="text-amber-600 hover:text-amber-700 font-bold flex items-center space-x-1"
+                    >
+                      <span>Xem & Sắp Xếp Trên Map</span>
+                      <span>→</span>
+                    </button>
                   </div>
-
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                    {(route.outlets || []).map((o: any, idx: number) => (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    {route.outlets?.map((outlet: any, idx: number) => (
                       <div
-                        key={o.id}
-                        className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between"
+                        key={outlet.id}
+                        className="flex items-center justify-between p-2 rounded bg-slate-50 text-xs"
                       >
                         <div className="flex items-center space-x-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px] flex items-center justify-center">
+                          <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-[10px]">
                             {idx + 1}
                           </span>
-                          <div>
-                            <div className="font-bold text-slate-800">{o.name}</div>
-                            <div className="text-[11px] text-slate-400 font-mono">
-                              GPS: {o.latitude.toFixed(4)}, {o.longitude.toFixed(4)}
-                            </div>
-                          </div>
+                          <span className="font-medium text-slate-800">{outlet.name}</span>
                         </div>
-
-                        <span className="font-mono text-[11px] font-bold text-slate-700">
-                          {o.currentDebt > 0 ? `${o.currentDebt.toLocaleString('vi-VN')}đ` : 'Hết nợ'}
+                        <span className="text-slate-500 text-[11px] font-mono">
+                          {outlet.phone || '—'}
                         </span>
                       </div>
                     ))}
@@ -139,59 +177,79 @@ export const RouteMcpPage: React.FC = () => {
             ))}
           </div>
         </div>
-      ) : (
-        /* Tab Lịch Sử Viếng Thăm & Xác Thực GPS Check-in */
+      )}
+
+      {/* Tab 3: Nhật Ký Viếng Thăm GPS */}
+      {activeTab === 'history' && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <h3 className="font-bold text-sm text-slate-900">
+              Nhật Ký Viếng Thăm Điểm Bán & Xác Thực Tọa Độ Vệ Tinh GPS
+            </h3>
+            <span className="text-xs text-slate-500">Giới hạn bán kính hợp lệ: &le; 100m</span>
+          </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500 font-semibold text-xs border-b border-slate-200 uppercase">
-                <tr>
-                  <th className="py-3 px-4">Thời Gian & Nhân Viên</th>
-                  <th className="py-3 px-4">Tiệm Tạp Hóa</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3 px-4">Thời Gian</th>
+                  <th className="py-3 px-4">Nhân Viên</th>
+                  <th className="py-3 px-4">Điểm Bán (Tạp Hóa)</th>
                   <th className="py-3 px-4">Tuyến Bán Hàng</th>
-                  <th className="py-3 px-4 text-center">Xác Thực Check-in GPS</th>
-                  <th className="py-3 px-4 text-center">Ảnh Thực Tế</th>
-                  <th className="py-3 px-4">Ghi Chú Kiểm Date / Tồn Quầy</th>
-                  <th className="py-3 px-4 text-center">Kết Quả Đơn</th>
+                  <th className="py-3 px-4 text-center">Xác Thực GPS</th>
+                  <th className="py-3 px-4 text-center">Hình Ảnh Chụp</th>
+                  <th className="py-3 px-4">Ghi Chú Kiểm Tồn</th>
+                  <th className="py-3 px-4 text-center">Đơn Hàng</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-100">
                 {visits.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">Chưa có nhật ký viếng thăm nào.</td>
+                    <td colSpan={8} className="py-8 text-center text-xs text-slate-400">
+                      Chưa có dữ liệu viếng thăm nào được ghi nhận hôm nay.
+                    </td>
                   </tr>
                 ) : (
                   visits.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50 transition">
+                      <td className="py-3.5 px-4 text-xs text-slate-700 whitespace-nowrap">
+                        <div className="flex items-center space-x-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{new Date(v.checkInTime).toLocaleTimeString('vi-VN')}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">
+                          {new Date(v.checkInTime).toLocaleDateString('vi-VN')}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-800">
+                        {v.salesRepName}
+                      </td>
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900">{v.salesRepName}</div>
-                        <div className="text-xs text-slate-400 flex items-center space-x-1 mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          <span>{new Date(v.checkInTime).toLocaleString('vi-VN')}</span>
+                        <div className="text-xs font-bold text-slate-900">{v.outlet?.name}</div>
+                        <div className="text-[11px] text-slate-500 truncate max-w-xs">
+                          {v.outlet?.address}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-900">
-                        {v.outlet?.name}
-                      </td>
                       <td className="py-3.5 px-4 text-xs text-slate-600">
-                        {v.route?.name || 'Tuyến thị trường'}
+                        {v.route?.name || 'Tuyến vãng lai'}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`inline-flex items-center space-x-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                          className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
                             v.isGpsValid
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-rose-100 text-rose-800 border border-rose-300'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-rose-50 text-rose-700 border border-rose-200'
                           }`}
                         >
                           {v.isGpsValid ? (
                             <>
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>Hợp lệ ({v.distanceMeters || 0}m)</span>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Đúng vị trí ({v.distanceMeters || 0}m)</span>
                             </>
                           ) : (
                             <>
-                              <AlertTriangle className="w-3 h-3" />
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                               <span>Lệch {v.distanceMeters || 0}m!</span>
                             </>
                           )}
@@ -237,4 +295,4 @@ export const RouteMcpPage: React.FC = () => {
     </div>
   );
 };
-
+export default RouteMcpPage;

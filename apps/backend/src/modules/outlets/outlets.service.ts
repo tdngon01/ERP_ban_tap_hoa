@@ -54,32 +54,47 @@ export class OutletsService {
   }
 
   async create(data: {
-    code: string;
+    code?: string;
     name: string;
     ownerName: string;
     phone: string;
     address: string;
     district?: string;
     province?: string;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
     creditLimit?: number;
     routeId?: string;
+    routeCode?: string;
     tier?: string;
   }) {
+    let code = data.code;
+    if (!code) {
+      const count = await this.prisma.outlet.count();
+      code = `TH-${String(count + 1).padStart(3, '0')}`;
+    }
+
+    let routeId = data.routeId;
+    if (!routeId && data.routeCode) {
+      const foundRoute = await this.prisma.route.findUnique({
+        where: { code: data.routeCode },
+      });
+      if (foundRoute) routeId = foundRoute.id;
+    }
+
     return this.prisma.outlet.create({
       data: {
-        code: data.code,
+        code,
         name: data.name,
         ownerName: data.ownerName,
         phone: data.phone,
         address: data.address,
         district: data.district || 'Quận 1',
         province: data.province || 'Hồ Chí Minh',
-        latitude: data.latitude,
-        longitude: data.longitude,
+        latitude: data.latitude ?? 10.7769,
+        longitude: data.longitude ?? 106.7009,
         creditLimit: data.creditLimit || 10000000,
-        routeId: data.routeId,
+        routeId,
         tier: data.tier || 'STANDARD',
       },
       include: { route: true },

@@ -7,6 +7,22 @@ export const api = axios.create({
   timeout: 15000,
 });
 
+// Tự động gắn Token xác thực vào Header
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('fmcg_auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Auth & Đăng nhập
+export const login = (data: { username: string; password?: string }) =>
+  api.post('/auth/login', data).then((r) => r.data);
+export const getMyProfile = () => api.get('/auth/me').then((r) => r.data);
+export const changePassword = (data: { userId: string; oldPassword?: string; newPassword?: string }) =>
+  api.post('/auth/change-password', data).then((r) => r.data);
+
 // Dashboard
 export const getDashboardMetrics = () => api.get('/dashboard/metrics').then(r => r.data);
 
@@ -45,19 +61,26 @@ export const updateOutlet = (id: string, data: any) => api.put(`/outlets/${id}`,
 
 // Routes & MCP
 export const getRoutes = () => api.get('/routes').then(r => r.data);
+export const createRoute = (data: any) => api.post('/routes', data).then(r => r.data);
+export const updateRoute = (id: string, data: any) => api.put(`/routes/${id}`, data).then(r => r.data);
+export const deleteRoute = (id: string) => api.delete(`/routes/${id}`).then(r => r.data);
+export const assignOutletsToRoute = (routeId: string, outletIds: string[]) => 
+  api.post(`/routes/${routeId}/assign-outlets`, { outletIds }).then(r => r.data);
 export const getTodayMcp = (dayOfWeek?: string, salesRepName?: string) => 
   api.get('/routes/mcp/today', { params: { dayOfWeek, salesRepName } }).then(r => r.data);
 export const checkInStore = (data: any) => api.post('/routes/checkin', data).then(r => r.data);
 export const checkOutStore = (data: any) => api.post('/routes/checkout', data).then(r => r.data);
 export const getVisitHistory = () => api.get('/routes/visits').then(r => r.data);
 
-// Orders & Promotions
+// Orders & Promotions & Returns
 export const getOrders = (status?: string, outletId?: string) => 
   api.get('/orders', { params: { status, outletId } }).then(r => r.data);
 export const getPromotions = () => api.get('/orders/promotions').then(r => r.data);
 export const createOrder = (data: any) => api.post('/orders', data).then(r => r.data);
 export const updateOrderStatus = (id: string, status: string) => 
   api.put(`/orders/${id}/status`, { status }).then(r => r.data);
+export const createReturnOrder = (data: any) => api.post('/orders/returns', data).then(r => r.data);
+export const getReturnHistory = () => api.get('/orders/returns/history').then(r => r.data);
 
 // Debt & VietQR
 export const getDebtLedger = () => api.get('/debt/ledger').then(r => r.data);
@@ -75,12 +98,25 @@ export const syncOutletsFromSheets = (spreadsheetId?: string) =>
   api.post('/google-sheets/sync/outlets', { spreadsheetId }).then(r => r.data);
 export const exportOrdersToSheets = () => api.get('/google-sheets/export/orders').then(r => r.data);
 export const exportInventoryToSheets = () => api.get('/google-sheets/export/inventory').then(r => r.data);
+export const exportProductsToSheets = () => api.get('/google-sheets/export/products').then(r => r.data);
+export const exportOutletsToSheets = () => api.get('/google-sheets/export/outlets').then(r => r.data);
+export const backupAllToGoogleSheets = (spreadsheetId?: string) => 
+  api.post('/google-sheets/backup-all', { spreadsheetId }).then(r => r.data);
 
 // System Settings & Database Backup
 export const getSystemSettings = () => api.get('/settings').then(r => r.data);
 export const updateSystemSettings = (data: any) => api.post('/settings', data).then(r => r.data);
+export const getDatabaseInfo = () => api.get('/settings/database-info').then(r => r.data);
 export const createBackup = () => api.post('/settings/backup').then(r => r.data);
 export const getBackups = () => api.get('/settings/backups').then(r => r.data);
 export const getCsvExportUrl = (type: 'orders' | 'inventory' | 'debt') => `${API_BASE}/settings/export/csv?type=${type}`;
+
+// Users & RBAC Permissions
+export const getUsers = () => api.get('/users').then(r => r.data);
+export const getUserRoles = () => api.get('/users/roles').then(r => r.data);
+export const getUserDetail = (id: string) => api.get(`/users/${id}`).then(r => r.data);
+export const createUser = (data: any) => api.post('/users', data).then(r => r.data);
+export const updateUser = (id: string, data: any) => api.put(`/users/${id}`, data).then(r => r.data);
+export const deleteUser = (id: string) => api.delete(`/users/${id}`).then(r => r.data);
 
 

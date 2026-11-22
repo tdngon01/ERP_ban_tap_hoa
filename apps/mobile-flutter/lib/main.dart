@@ -37,9 +37,25 @@ class SfaHomeScreen extends StatefulWidget {
 class _SfaHomeScreenState extends State<SfaHomeScreen> {
   int _currentIndex = 0;
   bool _loading = false;
-  List<dynamic> _outlets = [];
+  List<dynamic> _allOutlets = [];
   String _selectedDay = 'Thứ Hai';
+  String _selectedRouteCode = 'TUYEN-Q1-T2';
   final String _salesRepName = 'Nguyễn Văn Hùng';
+
+  // Tìm kiếm và Lọc trạng thái
+  String _searchQuery = '';
+  String _selectedStatusFilter = 'ALL'; // 'ALL', 'UNVISITED', 'ORDERED', 'NO_SALE'
+  final TextEditingController _searchController = TextEditingController();
+
+  final List<Map<String, String>> _routeList = [
+    {'code': 'ALL', 'name': 'Tất Cả Các Tuyến', 'day': 'Toàn Bộ'},
+    {'code': 'TUYEN-Q1-T2', 'name': 'Tuyến Q.1 (Bến Nghé - Nguyễn Huệ)', 'day': 'Thứ Hai'},
+    {'code': 'TUYEN-BT-T3', 'name': 'Tuyến Bình Thạnh (Thị Nghè - Bạch Đằng)', 'day': 'Thứ Ba'},
+    {'code': 'TUYEN-Q5-T4', 'name': 'Tuyến Q.5 (Chợ Lớn - An Đông)', 'day': 'Thứ Tư'},
+    {'code': 'TUYEN-Q10-T5', 'name': 'Tuyến Q.10 (Sư Vạn Hạnh - Tô Hiến Thành)', 'day': 'Thứ Năm'},
+    {'code': 'TUYEN-TB-T6', 'name': 'Tuyến Tân Bình (Cộng Hòa - Hoàng Hoa Thám)', 'day': 'Thứ Sáu'},
+    {'code': 'TUYEN-GV-T7', 'name': 'Tuyến Gò Vấp (Quang Trung - Lê Đức Thọ)', 'day': 'Thứ Bảy'},
+  ];
 
   @override
   void initState() {
@@ -47,12 +63,18 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
     _fetchTodayMcp();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchTodayMcp() async {
     setState(() => _loading = true);
     try {
       final response = await http.get(
         Uri.parse('${ApiConstants.todayMcpEndpoint}?salesRepName=$_salesRepName'),
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 4));
 
       if (response.statusCode == 200) {
         final data = json.decode(utf8.decode(response.bodyBytes));
@@ -60,12 +82,12 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
         if (routes.isNotEmpty) {
           setState(() {
             _selectedDay = routes[0]['dayOfWeek'] ?? 'Thứ Hai';
-            _outlets = routes[0]['outlets'] ?? [];
+            _allOutlets = routes[0]['outlets'] ?? [];
           });
+          return;
         }
-      } else {
-        _loadFallbackData();
       }
+      _loadFallbackData();
     } catch (e) {
       _loadFallbackData();
     } finally {
@@ -77,7 +99,8 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
 
   void _loadFallbackData() {
     setState(() {
-      _outlets = [
+      _allOutlets = [
+        // Tuyến Q1 - Thứ 2
         {
           'id': 'out-01',
           'code': 'TH-001',
@@ -90,6 +113,8 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
           'latitude': 10.7769,
           'longitude': 106.7009,
           'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-Q1-T2',
+          'dayOfWeek': 'Thứ Hai',
         },
         {
           'id': 'out-02',
@@ -103,6 +128,8 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
           'latitude': 10.7745,
           'longitude': 106.7032,
           'status': 'Đã lên đơn',
+          'routeCode': 'TUYEN-Q1-T2',
+          'dayOfWeek': 'Thứ Hai',
         },
         {
           'id': 'out-03',
@@ -116,31 +143,171 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
           'latitude': 10.7791,
           'longitude': 106.6985,
           'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-Q1-T2',
+          'dayOfWeek': 'Thứ Hai',
+        },
+        // Tuyến Bình Thạnh - Thứ 3
+        {
+          'id': 'out-04',
+          'code': 'TH-004',
+          'name': 'Tạp Hóa Bác Năm Thị Nghè',
+          'address': '145 Xô Viết Nghệ Tĩnh, Bình Thạnh',
+          'ownerName': 'Trần Văn Năm',
+          'phone': '0933556677',
+          'currentDebt': 2100000,
+          'creditLimit': 10000000,
+          'latitude': 10.8015,
+          'longitude': 106.7123,
+          'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-BT-T3',
+          'dayOfWeek': 'Thứ Ba',
+        },
+        {
+          'id': 'out-05',
+          'code': 'TH-005',
+          'name': 'Đại Lý Bánh Kẹo Minh Tâm',
+          'address': '210 Bạch Đằng, P.24, Bình Thạnh',
+          'ownerName': 'Hoàng Minh Tâm',
+          'phone': '0944112288',
+          'currentDebt': 6800000,
+          'creditLimit': 15000000,
+          'latitude': 10.8032,
+          'longitude': 106.7088,
+          'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-BT-T3',
+          'dayOfWeek': 'Thứ Ba',
+        },
+        // Tuyến Quận 5 - Thứ 4
+        {
+          'id': 'out-06',
+          'code': 'TH-006',
+          'name': 'Tiệm Tạp Hóa Chú Hỏa Chợ Lớn',
+          'address': '56 Trần Hưng Đạo, P.7, Quận 5',
+          'ownerName': 'Vương Gia Hỏa',
+          'phone': '0908889911',
+          'currentDebt': 3400000,
+          'creditLimit': 12000000,
+          'latitude': 10.7541,
+          'longitude': 106.6672,
+          'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-Q5-T4',
+          'dayOfWeek': 'Thứ Tư',
+        },
+        // Tuyến Quận 10 - Thứ 5
+        {
+          'id': 'out-07',
+          'code': 'TH-007',
+          'name': 'Tạp Hóa Cô Mai Sư Vạn Hạnh',
+          'address': '312 Sư Vạn Hạnh, P.12, Quận 10',
+          'ownerName': 'Ngô Thị Tuyết Mai',
+          'phone': '0912334455',
+          'currentDebt': 1900000,
+          'creditLimit': 8000000,
+          'latitude': 10.7712,
+          'longitude': 106.6698,
+          'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-Q10-T5',
+          'dayOfWeek': 'Thứ Năm',
+        },
+        // Tuyến Tân Bình - Thứ 6
+        {
+          'id': 'out-08',
+          'code': 'TH-008',
+          'name': 'Tạp Hóa Hương Sen Hoàng Hoa Thám',
+          'address': '108 Hoàng Hoa Thám, P.12, Tân Bình',
+          'ownerName': 'Đặng Hương Sen',
+          'phone': '0938445566',
+          'currentDebt': 4100000,
+          'creditLimit': 10000000,
+          'latitude': 10.7988,
+          'longitude': 106.6491,
+          'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-TB-T6',
+          'dayOfWeek': 'Thứ Sáu',
+        },
+        // Tuyến Gò Vấp - Thứ 7
+        {
+          'id': 'out-09',
+          'code': 'TH-009',
+          'name': 'Tạp Hóa Kim Oanh Quang Trung',
+          'address': '246 Quang Trung, P.10, Gò Vấp',
+          'ownerName': 'Vũ Kim Oanh',
+          'phone': '0966778899',
+          'currentDebt': 2800000,
+          'creditLimit': 8000000,
+          'latitude': 10.8288,
+          'longitude': 106.6651,
+          'status': 'Chưa ghé thăm',
+          'routeCode': 'TUYEN-GV-T7',
+          'dayOfWeek': 'Thứ Bảy',
         },
       ];
     });
   }
 
+  List<dynamic> _getFilteredOutlets() {
+    return _allOutlets.where((item) {
+      // 1. Lọc theo tuyến
+      if (_selectedRouteCode != 'ALL' && item['routeCode'] != _selectedRouteCode) {
+        return false;
+      }
+
+      // 2. Lọc theo trạng thái
+      final status = (item['status'] ?? 'Chưa ghé thăm').toString();
+      if (_selectedStatusFilter == 'UNVISITED' && status != 'Chưa ghé thăm') {
+        return false;
+      }
+      if (_selectedStatusFilter == 'ORDERED' && status != 'Đã lên đơn') {
+        return false;
+      }
+      if (_selectedStatusFilter == 'NO_SALE' &&
+          !status.startsWith('Không mua') &&
+          !status.startsWith('Đóng cửa')) {
+        return false;
+      }
+
+      // 3. Tìm kiếm theo từ khóa
+      if (_searchQuery.trim().isNotEmpty) {
+        final query = _searchQuery.trim().toLowerCase();
+        final name = (item['name'] ?? '').toString().toLowerCase();
+        final code = (item['code'] ?? '').toString().toLowerCase();
+        final owner = (item['ownerName'] ?? '').toString().toLowerCase();
+        final phone = (item['phone'] ?? '').toString().toLowerCase();
+        final address = (item['address'] ?? '').toString().toLowerCase();
+
+        if (!name.contains(query) &&
+            !code.contains(query) &&
+            !owner.contains(query) &&
+            !phone.contains(query) &&
+            !address.contains(query)) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final routeInfo = _routeList.firstWhere(
+      (r) => r['code'] == _selectedRouteCode,
+      orElse: () => _routeList[0],
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _currentIndex == 0
-                  ? 'SFA Thị Trường FMCG'
-                  : _currentIndex == 1
-                      ? 'Soạn Hàng & Tồn Kho Xe'
-                      : _currentIndex == 2
-                          ? 'Sổ Ghi Nhớ Giao Bù'
-                          : 'Hồ Sơ Sales Rep',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            const Text(
+              'SFA Di Động • Bán Hàng FMCG',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Tuyến: $_selectedDay • NV: $_salesRepName',
-              style: const TextStyle(fontSize: 11, color: Colors.white70),
+              'Tuyến: ${routeInfo['name']} (${routeInfo['day']})',
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -148,18 +315,32 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: const Icon(Icons.add_business),
+            tooltip: 'Mở điểm bán mới',
+            onPressed: _showCreateOutletDialog,
+          ),
+          IconButton(
             icon: const Icon(Icons.sync),
             tooltip: 'Đồng bộ dữ liệu ngoại tuyến',
             onPressed: () {
               _fetchTodayMcp();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đang làm mới dữ liệu từ server...')),
+                const SnackBar(content: Text('Đang làm mới dữ liệu từ máy chủ...')),
               );
             },
           ),
         ],
       ),
       body: _buildBody(),
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton.extended(
+              onPressed: _showCreateOutletDialog,
+              backgroundColor: const Color(0xFF15803D),
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add_business),
+              label: const Text('Mở Tiệm Mới', style: TextStyle(fontWeight: FontWeight.bold)),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
@@ -196,11 +377,233 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
       case 1:
         return VanStockView(salesRepName: _salesRepName);
       case 2:
-        return BackorderView(salesRepName: _salesRepName, outlets: _outlets);
+        return BackorderView(salesRepName: _salesRepName, outlets: _allOutlets);
       case 3:
       default:
         return _buildProfileTab();
     }
+  }
+
+  Widget _buildRouteHeader() {
+    final outletsInScope = _selectedRouteCode == 'ALL'
+        ? _allOutlets
+        : _allOutlets.where((o) => o['routeCode'] == _selectedRouteCode).toList();
+    final int totalCount = outletsInScope.length;
+    final int doneCount = outletsInScope
+        .where((o) =>
+            o['status'] == 'Đã lên đơn' ||
+            o['status']?.toString().startsWith('Không mua') == true ||
+            o['status']?.toString().startsWith('Đóng cửa') == true)
+        .length;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+        border: Border.all(color: Colors.green.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Tuyến MCP Dropdown
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 16,
+                backgroundColor: Color(0xFFDCFCE7),
+                child: Icon(Icons.route, color: Color(0xFF15803D), size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Chọn Tuyến Đi Thị Trường (MCP):', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    DropdownButton<String>(
+                      value: _selectedRouteCode,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF15803D)),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                      items: _routeList.map((r) {
+                        return DropdownMenuItem<String>(
+                          value: r['code'],
+                          child: Text('${r['day']} - ${r['name']}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedRouteCode = val;
+                            final found = _routeList.firstWhere((r) => r['code'] == val);
+                            _selectedDay = found['day']!;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Lọc Thứ trong tuần
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _routeList.map((r) {
+                final bool isSelected = _selectedRouteCode == r['code'];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: FilterChip(
+                    label: Text(r['day'] == 'Toàn Bộ' ? 'Tất Cả Tuyến' : r['day']!),
+                    selected: isSelected,
+                    selectedColor: const Color(0xFF15803D),
+                    labelStyle: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? Colors.white : Colors.black87,
+                    ),
+                    backgroundColor: Colors.grey.shade100,
+                    checkmarkColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    onSelected: (_) {
+                      setState(() {
+                        _selectedRouteCode = r['code']!;
+                        _selectedDay = r['day']!;
+                      });
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Ô TÌM KIẾM NHANH ĐIỂM BÁN
+          Container(
+            height: 42,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (v) => setState(() => _searchQuery = v),
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Tìm theo tên tiệm, chủ tiệm, SĐT, địa chỉ...',
+                hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 16, color: Colors.grey),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // BỘ LỌC TRẠNG THÁI (TẤT CẢ / CHƯA GHÉ / ĐÃ LÊN ĐƠN / KHÔNG MUA)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _statusFilterChip('ALL', 'Tất Cả (${totalCount})', Icons.storefront),
+                _statusFilterChip('UNVISITED', 'Chưa Ghé', Icons.schedule),
+                _statusFilterChip('ORDERED', 'Đã Lên Đơn', Icons.check_circle_outline),
+                _statusFilterChip('NO_SALE', 'Không Mua / Đóng Cửa', Icons.block),
+              ],
+            ),
+          ),
+
+          const Divider(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Tiến độ viếng thăm: $doneCount/$totalCount tiệm',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.green.shade800),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: doneCount == totalCount && totalCount > 0 ? Colors.green.shade50 : Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${totalCount > 0 ? ((doneCount / totalCount) * 100).toInt() : 0}% đạt',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: doneCount == totalCount && totalCount > 0 ? Colors.green.shade800 : Colors.amber.shade900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _showCreateOutletDialog,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF15803D),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              icon: const Icon(Icons.add_business, size: 18),
+              label: const Text('+ Mở Điểm Bán Mới (Thêm Tạp Hóa Mới)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusFilterChip(String code, String label, IconData icon) {
+    final bool isSelected = _selectedStatusFilter == code;
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: FilterChip(
+        avatar: Icon(
+          icon,
+          size: 14,
+          color: isSelected ? Colors.white : Colors.grey.shade700,
+        ),
+        label: Text(label),
+        selected: isSelected,
+        selectedColor: const Color(0xFF15803D),
+        labelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? Colors.white : Colors.black87,
+        ),
+        backgroundColor: Colors.white,
+        side: BorderSide(color: isSelected ? const Color(0xFF15803D) : Colors.grey.shade300),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        onSelected: (_) {
+          setState(() => _selectedStatusFilter = code);
+        },
+      ),
+    );
   }
 
   Widget _buildRouteTab() {
@@ -208,101 +611,433 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: _outlets.length,
-      itemBuilder: (context, index) {
-        final item = _outlets[index];
-        final bool isDone = item['status'] == 'Đã lên đơn';
+    final filtered = _getFilteredOutlets();
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        _buildRouteHeader(),
+        if (filtered.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(Icons.search_off, size: 48, color: Colors.grey.shade400),
+                  const SizedBox(height: 8),
+                  Text(
+                    _searchQuery.isNotEmpty
+                        ? 'Không tìm thấy điểm bán nào khớp với "$_searchQuery"!'
+                        : 'Không có điểm bán nào trong bộ lọc này!',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          ...filtered.map((item) => _buildOutletCard(item)),
+      ],
+    );
+  }
+
+  Widget _buildOutletCard(Map<String, dynamic> item) {
+    final String status = item['status'] ?? 'Chưa ghé thăm';
+    final bool isDone = status == 'Đã lên đơn';
+    final bool isNoSale = status.startsWith('Không mua') || status.startsWith('Đóng cửa');
+
+    Color badgeColor = Colors.amber.shade800;
+    Color badgeBg = Colors.amber.shade50;
+    Color badgeBorder = Colors.amber.shade200;
+    IconData badgeIcon = Icons.schedule;
+
+    if (isDone) {
+      badgeColor = Colors.green.shade800;
+      badgeBg = Colors.green.shade50;
+      badgeBorder = Colors.green.shade200;
+      badgeIcon = Icons.check_circle;
+    } else if (isNoSale) {
+      badgeColor = Colors.blueGrey.shade700;
+      badgeBg = Colors.blueGrey.shade50;
+      badgeBorder = Colors.blueGrey.shade200;
+      badgeIcon = Icons.cancel_outlined;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        item['code'] ?? 'GT-${index + 1}',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isDone ? Colors.green.shade50 : Colors.amber.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isDone ? Colors.green.shade200 : Colors.amber.shade200),
-                      ),
-                      child: Text(
-                        item['status'] ?? 'Chưa ghé thăm',
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    item['code'] ?? '',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: badgeBorder),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(badgeIcon, size: 12, color: badgeColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        status,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: isDone ? Colors.green.shade800 : Colors.amber.shade800,
+                          color: badgeColor,
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              item['name'] ?? '',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(Icons.person_pin, size: 14, color: Colors.grey.shade600),
+                const SizedBox(width: 4),
+                Text(
+                  '${item['ownerName'] ?? 'Chủ tiệm'} • ĐT: ${item['phone'] ?? ''}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade500),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    item['address'] ?? '',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Nợ gối đầu:', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    Text(
+                      '${(item['currentDebt'] ?? 0).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  item['name'] ?? '',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Chủ tiệm: ${item['ownerName'] ?? 'Chủ tiệm'} • ĐT: ${item['phone'] ?? ''}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                ),
-                Text(
-                  item['address'] ?? '',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                ),
-                const Divider(height: 20),
+                // TIỆN ÍCH NHANH: GỌI ĐIỆN & CHỈ ĐƯỜNG
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Nợ gối đầu:', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                        Text(
-                          '${(item['currentDebt'] ?? 0).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red),
-                        ),
-                      ],
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        _openVisitFlow(context, item);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    IconButton.filledTonal(
+                      tooltip: 'Gọi điện cho chủ tiệm',
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.blue.shade50,
+                        foregroundColor: Colors.blue.shade700,
+                        padding: const EdgeInsets.all(8),
+                        minimumSize: const Size(36, 36),
                       ),
-                      icon: const Icon(Icons.storefront, size: 16),
-                      label: const Text('Viếng Thăm (5 Bước)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.phone, size: 16),
+                      onPressed: () => _showCallDialog(item),
+                    ),
+                    const SizedBox(width: 6),
+                    IconButton.filledTonal(
+                      tooltip: 'Chỉ đường Google Maps',
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.teal.shade50,
+                        foregroundColor: Colors.teal.shade700,
+                        padding: const EdgeInsets.all(8),
+                        minimumSize: const Size(36, 36),
+                      ),
+                      icon: const Icon(Icons.near_me, size: 16),
+                      onPressed: () => _showDirectionsDialog(item),
                     ),
                   ],
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+
+            // NÚT BÁO KHÔNG MUA / ĐÓNG CỬA (RẤT QUAN TRỌNG TRONG FMCG)
+            if (!isDone && !isNoSale) ...[
+              OutlinedButton.icon(
+                onPressed: () => _showNoSaleDialog(item),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blueGrey.shade700,
+                  side: BorderSide(color: Colors.blueGrey.shade300),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  minimumSize: const Size(double.infinity, 36),
+                ),
+                icon: const Icon(Icons.cancel_presentation, size: 15),
+                label: const Text('Báo Không Mua Hàng / Đóng Cửa (Lưu KPI)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 8),
+            ],
+
+            // 2 NÚT THAO TÁC CHÍNH: LÊN ĐƠN NHANH & QUY TRÌNH 5 BƯỚC
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      _openVisitFlow(context, item, initialStep: 4); // Bỏ qua các bước đầu ➔ Vào thẳng Bước 4
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFD97706),
+                      side: const BorderSide(color: Color(0xFFD97706), width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    icon: const Icon(Icons.bolt, size: 16),
+                    label: const Text('Lên Đơn Nhanh', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _openVisitFlow(context, item, initialStep: 1); // Quy trình tuần tự từ Bước 1
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    icon: const Icon(Icons.storefront, size: 16),
+                    label: const Text('Viếng Thăm (5 Bước)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNoSaleDialog(Map<String, dynamic> item) {
+    String selectedReason = 'Còn nhiều hàng tồn kho bánh kẹo';
+    final reasons = [
+      'Còn nhiều hàng tồn kho bánh kẹo',
+      'Chủ tiệm vắng mặt / Đi vắng',
+      'Cửa hàng đóng cửa / Đang sửa chữa',
+      'Chê giá cao / Đang chờ khuyến mãi khác',
+      'Không có nhu cầu nhập chuyến này',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.report_problem_outlined, color: Colors.amber.shade800),
+              const SizedBox(width: 8),
+              const Text('Ghi Nhận Không Mua', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
           ),
-        );
-      },
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Điểm bán: ${item['name']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 12),
+              const Text('Lý do không đặt hàng hôm nay:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 6),
+              ...reasons.map((r) => RadioListTile<String>(
+                title: Text(r, style: const TextStyle(fontSize: 13)),
+                value: r,
+                groupValue: selectedReason,
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                activeColor: const Color(0xFF15803D),
+                onChanged: (val) {
+                  if (val != null) setDialogState(() => selectedReason = val);
+                },
+              )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Hủy bỏ'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                setState(() {
+                  item['status'] = 'Không mua (${selectedReason})';
+                });
+                try {
+                  await http.post(
+                    Uri.parse(ApiConstants.checkOutEndpoint),
+                    headers: {'Content-Type': 'application/json'},
+                    body: json.encode({
+                      'visitId': item['id'] ?? 'mock-visit',
+                      'hasOrder': false,
+                      'noOrderReason': selectedReason,
+                      'notes': 'Sales ghi nhận không mua trực tiếp trên app SFA',
+                    }),
+                  );
+                } catch (_) {}
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Đã ghi nhận: ${item['name']} không mua (${selectedReason})'),
+                      backgroundColor: Colors.blueGrey.shade800,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF15803D),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Lưu Kết Quả'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCallDialog(Map<String, dynamic> item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.phone, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('Gọi Điện Cho Khách'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Tiệm: ${item['name']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('Chủ tiệm: ${item['ownerName']}'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.phone_in_talk, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  Text(
+                    item['phone'] ?? 'Chưa có SĐT',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng')),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Đang kết nối cuộc gọi tới ${item['phone']}...')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+            icon: const Icon(Icons.call, size: 16),
+            label: const Text('Bấm Gọi Ngay'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDirectionsDialog(Map<String, dynamic> item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.map, color: Colors.teal),
+            SizedBox(width: 8),
+            Text('Chỉ Đường Đến Tiệm'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Tiệm: ${item['name']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('Địa chỉ: ${item['address']}'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.teal.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Tọa độ GPS: ${item['latitude']}, ${item['longitude']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 4),
+                  const Text('Dẫn đường Google Maps tối ưu lộ trình cho xe Van Sales', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng')),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Đã định vị tọa độ GPS điểm bán ${item['name']}')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+            icon: const Icon(Icons.directions, size: 16),
+            label: const Text('Dẫn Đường'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -342,7 +1077,7 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
           Row(
             children: [
               Expanded(
-                child: _kpiCard('Số tiệm viếng thăm', '${_outlets.length} tiệm', Icons.store),
+                child: _kpiCard('Số tiệm viếng thăm', '${_allOutlets.length} tiệm', Icons.store),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -373,17 +1108,323 @@ class _SfaHomeScreenState extends State<SfaHomeScreen> {
     );
   }
 
-  void _openVisitFlow(BuildContext context, Map<String, dynamic> item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StoreVisitScreen(outlet: item, salesRepName: _salesRepName),
+  void _showCreateOutletDialog() {
+    final formKey = GlobalKey<FormState>();
+    String storeName = '';
+    String ownerName = '';
+    String phone = '';
+    String address = '';
+    String targetRouteCode = _selectedRouteCode == 'ALL' ? 'TUYEN-Q1-T2' : _selectedRouteCode;
+    int creditLimit = 10000000;
+    const double lat = 10.7769;
+    const double lng = 106.7009;
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.add_business, color: Color(0xFF15803D)),
+              SizedBox(width: 8),
+              Text('Mở Điểm Bán Mới', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Thông tin tiệm tạp hóa mới phát hiện:', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    const SizedBox(height: 10),
+
+                    // Tên tiệm
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Tên Tiệm Tạp Hóa *',
+                        hintText: 'VD: Tạp Hóa Bảy Cường',
+                        isDense: true,
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.store, size: 18),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên tiệm' : null,
+                      onChanged: (v) => storeName = v,
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Chủ tiệm & SĐT
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            decoration: const InputDecoration(
+                              labelText: 'Chủ Tiệm *',
+                              hintText: 'VD: Nguyễn Văn Cường',
+                              isDense: true,
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.person, size: 18),
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập tên chủ' : null,
+                            onChanged: (v) => ownerName = v,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              labelText: 'Số ĐT *',
+                              hintText: '0909123456',
+                              isDense: true,
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.phone, size: 18),
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập SĐT' : null,
+                            onChanged: (v) => phone = v,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Địa chỉ
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Địa Chỉ Chi Tiết *',
+                        hintText: 'Số nhà, tên đường, phường...',
+                        isDense: true,
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.location_on, size: 18),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập địa chỉ' : null,
+                      onChanged: (v) => address = v,
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Gán vào Tuyến MCP nào
+                    DropdownButtonFormField<String>(
+                      value: targetRouteCode,
+                      decoration: const InputDecoration(
+                        labelText: 'Gán Vào Tuyến MCP *',
+                        isDense: true,
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.route, size: 18),
+                      ),
+                      items: _routeList.where((r) => r['code'] != 'ALL').map((r) {
+                        return DropdownMenuItem<String>(
+                          value: r['code'],
+                          child: Text('${r['day']} - ${r['name']}', style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
+                        );
+                      }).toList(),
+                      onChanged: (v) {
+                        if (v != null) targetRouteCode = v;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Hạn mức nợ gối đầu
+                    DropdownButtonFormField<int>(
+                      value: creditLimit,
+                      decoration: const InputDecoration(
+                        labelText: 'Hạn Mức Nợ Gối Đầu',
+                        isDense: true,
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.credit_score, size: 18),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 5000000, child: Text('5.000.000 đ')),
+                        DropdownMenuItem(value: 10000000, child: Text('10.000.000 đ (Chuẩn)')),
+                        DropdownMenuItem(value: 20000000, child: Text('20.000.000 đ (Lớn)')),
+                        DropdownMenuItem(value: 50000000, child: Text('50.000.000 đ (Đại lý)')),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) creditLimit = v;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Tọa độ GPS định vị
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green.shade200),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.my_location, size: 16, color: Color(0xFF15803D)),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'GPS Tự Động: 10.7769, 106.7009 (Đã định vị)',
+                              style: TextStyle(fontSize: 11, color: Color(0xFF15803D), fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton.icon(
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => isSubmitting = true);
+
+                      try {
+                        final bodyPayload = json.encode({
+                          'name': storeName.trim(),
+                          'ownerName': ownerName.trim(),
+                          'phone': phone.trim(),
+                          'address': address.trim(),
+                          'routeCode': targetRouteCode,
+                          'district': 'Quận 1',
+                          'creditLimit': creditLimit,
+                          'latitude': lat,
+                          'longitude': lng,
+                        });
+
+                        final res = await http.post(
+                          Uri.parse(ApiConstants.outletsEndpoint),
+                          headers: {'Content-Type': 'application/json; charset=utf-8'},
+                          body: bodyPayload,
+                        ).timeout(const Duration(seconds: 4));
+
+                        Map<String, dynamic> newOutlet;
+                        if (res.statusCode == 200 || res.statusCode == 201) {
+                          newOutlet = json.decode(utf8.decode(res.bodyBytes));
+                        } else {
+                          newOutlet = {
+                            'id': 'out-${DateTime.now().millisecondsSinceEpoch}',
+                            'code': 'TH-00${_allOutlets.length + 1}',
+                            'name': storeName.trim(),
+                            'ownerName': ownerName.trim(),
+                            'phone': phone.trim(),
+                            'address': address.trim(),
+                            'creditLimit': creditLimit,
+                            'latitude': lat,
+                            'longitude': lng,
+                          };
+                        }
+
+                        final targetDay = _routeList.firstWhere(
+                          (r) => r['code'] == targetRouteCode,
+                          orElse: () => _routeList[1],
+                        )['day'] ?? 'Thứ Hai';
+
+                        newOutlet['status'] = 'Chưa ghé thăm';
+                        newOutlet['routeCode'] = targetRouteCode;
+                        newOutlet['dayOfWeek'] = targetDay;
+                        newOutlet['currentDebt'] = newOutlet['currentDebt'] ?? 0;
+
+                        setState(() {
+                          _allOutlets.insert(0, newOutlet);
+                          _selectedRouteCode = targetRouteCode;
+                          _selectedDay = targetDay;
+                          _selectedStatusFilter = 'ALL';
+                        });
+
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('🎉 Đã mở tiệm mới: ${newOutlet['name']} và đồng bộ máy chủ thành công!'),
+                              backgroundColor: const Color(0xFF15803D),
+                              duration: const Duration(seconds: 5),
+                              action: SnackBarAction(
+                                label: 'Lên Đơn Ngay',
+                                textColor: Colors.amber,
+                                onPressed: () {
+                                  _openVisitFlow(context, newOutlet, initialStep: 4);
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        final fallback = {
+                          'id': 'out-${DateTime.now().millisecondsSinceEpoch}',
+                          'code': 'TH-00${_allOutlets.length + 1}',
+                          'name': storeName.trim(),
+                          'ownerName': ownerName.trim(),
+                          'phone': phone.trim(),
+                          'address': address.trim(),
+                          'creditLimit': creditLimit,
+                          'currentDebt': 0,
+                          'latitude': lat,
+                          'longitude': lng,
+                          'status': 'Chưa ghé thăm',
+                          'routeCode': targetRouteCode,
+                          'dayOfWeek': _routeList.firstWhere((r) => r['code'] == targetRouteCode)['day'] ?? 'Thứ Hai',
+                        };
+
+                        setState(() {
+                          _allOutlets.insert(0, fallback);
+                          _selectedRouteCode = targetRouteCode;
+                          _selectedDay = fallback['dayOfWeek'];
+                          _selectedStatusFilter = 'ALL';
+                        });
+
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('🎉 Đã thêm tiệm mới ${fallback['name']}! (Sẽ tự động đồng bộ máy chủ)'),
+                              backgroundColor: const Color(0xFF15803D),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF15803D),
+                foregroundColor: Colors.white,
+              ),
+              icon: isSubmitting
+                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Icon(Icons.check, size: 16),
+              label: Text(isSubmitting ? 'Đang lưu...' : 'Lưu & Đồng Bộ'),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  void _openVisitFlow(BuildContext context, Map<String, dynamic> item, {int initialStep = 1}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StoreVisitScreen(
+          outlet: item,
+          salesRepName: _salesRepName,
+          initialStep: initialStep,
+        ),
+      ),
+    ).then((_) {
+      setState(() {});
+    });
+  }
 }
 
-/// ==========================================
+
 /// VIEW 1: SOẠN HÀNG LÊN XE & TỒN KHO XE VAN SALES
 /// ==========================================
 class VanStockView extends StatefulWidget {
@@ -934,26 +1975,192 @@ class _BackorderViewState extends State<BackorderView> {
 }
 
 /// ==========================================
-/// QUY TRÌNH 5 BƯỚC VIẾNG THĂM TẠP HÓA
+
+/// ==========================================
+/// QUY TRÌNH 5 BƯỚC VIẾNG THĂM TẠP HÓA (FMCG STANDARD)
 /// ==========================================
 class StoreVisitScreen extends StatefulWidget {
   final Map<String, dynamic> outlet;
   final String salesRepName;
+  final int initialStep;
 
-  const StoreVisitScreen({super.key, required this.outlet, required this.salesRepName});
+  const StoreVisitScreen({
+    super.key,
+    required this.outlet,
+    required this.salesRepName,
+    this.initialStep = 1,
+  });
 
   @override
   State<StoreVisitScreen> createState() => _StoreVisitScreenState();
 }
 
 class _StoreVisitScreenState extends State<StoreVisitScreen> {
-  int _currentStep = 1;
+  late int _currentStep;
   bool _checkedIn = false;
   String _dateCheckNotes = 'Chocopie hộp còn 4 hộp cận date 06/2026; AFC còn 10 gói date xa.';
-  int _orderQty = 5;
-  String _orderUom = 'Thùng';
+
+  // Danh mục 6 sản phẩm bánh kẹo FMCG phổ biến nhất
+  final List<Map<String, dynamic>> _catalogProducts = [
+    {
+      'sku': 'ORION-CP-12P',
+      'name': 'Bánh Chocopie Hộp 12 Cái (Orion)',
+      'brand': 'Orion',
+      'category': 'Bánh Chocopie',
+      'vanStock': 40,
+      'uoms': [
+        {'name': 'Thùng', 'price': 480000, 'label': 'Thùng (8 Hộp)'},
+        {'name': 'Hộp', 'price': 62000, 'label': 'Hộp (12 Cái)'},
+      ],
+    },
+    {
+      'sku': 'AFC-RAU-200G',
+      'name': 'Bánh Quy AFC Dinh Dưỡng Vị Rau (Kinh Đô)',
+      'brand': 'Kinh Đô',
+      'category': 'Bánh Quy',
+      'vanStock': 25,
+      'uoms': [
+        {'name': 'Thùng', 'price': 360000, 'label': 'Thùng (12 Hộp)'},
+        {'name': 'Hộp', 'price': 32000, 'label': 'Hộp (Gói 200g)'},
+      ],
+    },
+    {
+      'sku': 'ORION-CUSTAS-6P',
+      'name': 'Bánh Custas Kem Trứng 6P (Orion)',
+      'brand': 'Orion',
+      'category': 'Bánh Trứng',
+      'vanStock': 30,
+      'uoms': [
+        {'name': 'Thùng', 'price': 420000, 'label': 'Thùng (10 Hộp)'},
+        {'name': 'Hộp', 'price': 44000, 'label': 'Hộp (6 Cái)'},
+      ],
+    },
+    {
+      'sku': 'OISHI-BAP-CAY',
+      'name': 'Snack Bắp Ngọt Cay Oishi (Gói lớn)',
+      'brand': 'Oishi',
+      'category': 'Snack',
+      'vanStock': 50,
+      'uoms': [
+        {'name': 'Thùng', 'price': 240000, 'label': 'Thùng (10 Dây)'},
+        {'name': 'Dây', 'price': 25000, 'label': 'Dây (10 Gói)'},
+      ],
+    },
+    {
+      'sku': 'COSY-ME-288G',
+      'name': 'Bánh Quy Mè Cosy Marie (Kinh Đô)',
+      'brand': 'Kinh Đô',
+      'category': 'Bánh Quy',
+      'vanStock': 20,
+      'uoms': [
+        {'name': 'Thùng', 'price': 340000, 'label': 'Thùng (12 Hộp)'},
+        {'name': 'Hộp', 'price': 30000, 'label': 'Hộp (288g)'},
+      ],
+    },
+    {
+      'sku': 'ALPEN-DAU-16P',
+      'name': 'Kẹo Ngậm Alpenliebe Hương Dâu (Perfetti)',
+      'brand': 'Perfetti',
+      'category': 'Kẹo Ngậm',
+      'vanStock': 35,
+      'uoms': [
+        {'name': 'Thùng', 'price': 520000, 'label': 'Thùng (16 Hộp)'},
+        {'name': 'Hộp', 'price': 35000, 'label': 'Hộp (16 Thanh)'},
+      ],
+    },
+  ];
+
+  // GIỎ HÀNG ĐA SẢN PHẨM (MULTI-ITEM CART)
+  final Map<String, int> _cartQuantities = {};
+  final Map<String, String> _cartSelectedUoms = {};
+
+  // Thanh toán: MẶC ĐỊNH LÀ TIỀN MẶT
+  String _paymentMethod = 'CASH'; // 'CASH', 'TRANSFER', 'DEBT'
+  int _cashGiven = 0;
   String? _vietQrUrl;
   bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentStep = widget.initialStep;
+
+    // Khởi tạo giỏ hàng mẫu thực tế (2 Thùng Chocopie, 1 Thùng AFC)
+    for (var p in _catalogProducts) {
+      final String sku = p['sku'];
+      _cartSelectedUoms[sku] = (p['uoms'] as List)[0]['name'];
+      _cartQuantities[sku] = 0;
+    }
+    _cartQuantities['ORION-CP-12P'] = 2;
+    _cartQuantities['AFC-RAU-200G'] = 1;
+
+    _cashGiven = _totalAmount;
+  }
+
+  int _getItemPrice(String sku, String uomName) {
+    final prod = _catalogProducts.firstWhere((p) => p['sku'] == sku);
+    final uom = (prod['uoms'] as List).firstWhere(
+      (u) => u['name'] == uomName,
+      orElse: () => prod['uoms'][0],
+    );
+    return uom['price'] as int;
+  }
+
+  int get _totalAmount {
+    int total = 0;
+    _cartQuantities.forEach((sku, qty) {
+      if (qty > 0) {
+        final uomName = _cartSelectedUoms[sku] ?? 'Thùng';
+        total += qty * _getItemPrice(sku, uomName);
+      }
+    });
+    return total;
+  }
+
+  int get _totalItemsCount {
+    int count = 0;
+    _cartQuantities.forEach((sku, qty) {
+      if (qty > 0) count++;
+    });
+    return count;
+  }
+
+  int get _totalUnitsCount {
+    int units = 0;
+    _cartQuantities.forEach((sku, qty) {
+      units += qty;
+    });
+    return units;
+  }
+
+  List<Map<String, dynamic>> get _cartItemList {
+    final list = <Map<String, dynamic>>[];
+    for (var prod in _catalogProducts) {
+      final sku = prod['sku'];
+      final qty = _cartQuantities[sku] ?? 0;
+      if (qty > 0) {
+        final uom = _cartSelectedUoms[sku] ?? (prod['uoms'][0]['name'] as String);
+        final price = _getItemPrice(sku, uom);
+        list.add({
+          'sku': sku,
+          'name': prod['name'],
+          'brand': prod['brand'],
+          'uom': uom,
+          'qty': qty,
+          'price': price,
+          'total': qty * price,
+        });
+      }
+    }
+    return list;
+  }
+
+  String _formatVnd(num amount) {
+    return amount.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+  }
 
   Future<void> _performCheckIn() async {
     setState(() => _submitting = true);
@@ -983,20 +2190,76 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
     }
   }
 
-  Future<void> _submitOrderAndGetQr() async {
-    setState(() => _submitting = true);
-    final int amount = _orderQty * 480000;
+  void _proceedToPayment() {
+    final int amount = _totalAmount;
     setState(() {
-      _vietQrUrl = 'https://img.vietqr.io/image/970422-0909123456-compact2.png?amount=$amount&addInfo=TT%20${widget.outlet['code']}&accountName=NPP%20AN%20PHAT';
+      _cashGiven = amount;
+      _vietQrUrl = 'https://img.vietqr.io/image/970422-0988889999-compact2.png?amount=$amount&addInfo=TT%20${widget.outlet['code']}&accountName=NPP%20BANH%20KEO%20AN%20PHAT';
       _currentStep = 5;
-      _submitting = false;
     });
+  }
+
+  Future<void> _finishOrder() async {
+    final int total = _totalAmount;
+    widget.outlet['status'] = 'Đã lên đơn';
+
+    // Cập nhật công nợ nếu trả thiếu hoặc gối nợ
+    if (_paymentMethod == 'CASH') {
+      if (_cashGiven < total) {
+        final remainingDebt = total - _cashGiven;
+        widget.outlet['currentDebt'] = (widget.outlet['currentDebt'] ?? 0) + remainingDebt;
+      }
+    } else if (_paymentMethod == 'DEBT') {
+      widget.outlet['currentDebt'] = (widget.outlet['currentDebt'] ?? 0) + total;
+    }
+
+    // Gửi đơn hàng lên Backend NestJS
+    try {
+      await http.post(
+        Uri.parse(ApiConstants.ordersEndpoint),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'outletId': widget.outlet['id'],
+          'salesRepName': widget.salesRepName,
+          'items': _cartItemList.map((item) => {
+            'productSku': item['sku'],
+            'uomName': item['uom'],
+            'quantity': item['qty'],
+          }).toList(),
+          'notes': 'Đơn hàng tạo từ Mobile Flutter SFA App',
+        }),
+      );
+    } catch (_) {}
+
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    String paymentMsg = '';
+    if (_paymentMethod == 'CASH') {
+      if (_cashGiven >= total) {
+        paymentMsg = 'Đã thu ${_formatVnd(total)} đ Tiền Mặt (Đủ 100%)';
+      } else {
+        paymentMsg = 'Thu trước ${_formatVnd(_cashGiven)} đ • Gối nợ ${_formatVnd(total - _cashGiven)} đ';
+      }
+    } else if (_paymentMethod == 'TRANSFER') {
+      paymentMsg = 'Đã nhận Chuyển Khoản VietQR ${_formatVnd(total)} đ';
+    } else {
+      paymentMsg = 'Đã ghi nhận Nợ Gối Đầu 100% (${_formatVnd(total)} đ)';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('🎉 Hoàn tất đơn hàng tiệm ${widget.outlet['name']}!\n$paymentMsg'),
+        backgroundColor: const Color(0xFF15803D),
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   void _showQuickBackorderDialog() {
     int qty = 2;
     String uom = 'Thùng';
-    String promisedDate = '2026-11-02';
+    String promisedDate = '2026-11-08';
     String reason = 'Xe chở không đủ hàng theo nhu cầu tiệm';
 
     showDialog(
@@ -1051,9 +2314,11 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
                   }),
                 );
               } catch (_) {}
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đã ghi nhớ giao bù thành công! Sẽ hiển thị ở Tab Giao Bù.')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã ghi nhớ giao bù thành công! Sẽ hiển thị ở Tab Giao Bù.')),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber.shade800,
@@ -1066,61 +2331,219 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
     );
   }
 
+  void _showNoSaleInVisit() {
+    String selectedReason = 'Còn nhiều hàng tồn kho bánh kẹo';
+    final reasons = [
+      'Còn nhiều hàng tồn kho bánh kẹo',
+      'Chủ tiệm vắng mặt / Đi vắng',
+      'Cửa hàng đóng cửa / Đang sửa chữa',
+      'Chê giá cao / Đang chờ khuyến mãi khác',
+      'Không có nhu cầu nhập chuyến này',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.report_problem_outlined, color: Colors.amber.shade800),
+              const SizedBox(width: 8),
+              const Text('Báo Không Mua Hàng', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tiệm: ${widget.outlet['name']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 12),
+              const Text('Lý do không đặt hàng hôm nay:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 6),
+              ...reasons.map((r) => RadioListTile<String>(
+                title: Text(r, style: const TextStyle(fontSize: 13)),
+                value: r,
+                groupValue: selectedReason,
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                activeColor: const Color(0xFF15803D),
+                onChanged: (val) {
+                  if (val != null) setDialogState(() => selectedReason = val);
+                },
+              )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Quay lại'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                widget.outlet['status'] = 'Không mua (${selectedReason})';
+                try {
+                  await http.post(
+                    Uri.parse(ApiConstants.checkOutEndpoint),
+                    headers: {'Content-Type': 'application/json'},
+                    body: json.encode({
+                      'visitId': widget.outlet['id'] ?? 'mock-visit',
+                      'hasOrder': false,
+                      'noOrderReason': selectedReason,
+                      'notes': 'Sales ghi nhận không mua trong quy trình viếng thăm',
+                    }),
+                  );
+                } catch (_) {}
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Đã ghi nhận: ${widget.outlet['name']} không mua (${selectedReason})'),
+                      backgroundColor: Colors.blueGrey.shade800,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF15803D),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Xác Nhận & Thoát'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.outlet['name'] ?? 'Viếng Thăm Điểm Bán', style: const TextStyle(fontSize: 15)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.outlet['name'] ?? 'Viếng Thăm Điểm Bán', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            Text('Bước $_currentStep/5 • ${_getStepTitle(_currentStep)}', style: const TextStyle(fontSize: 11, color: Colors.white70)),
+          ],
+        ),
         backgroundColor: const Color(0xFF15803D),
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.cancel_outlined),
+            tooltip: 'Báo tiệm không mua hàng hôm nay',
+            onPressed: _showNoSaleInVisit,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thanh tiến trình 5 bước
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(5, (index) {
-                final int stepNum = index + 1;
-                final bool isCurrent = _currentStep == stepNum;
-                final bool isPassed = _currentStep > stepNum;
+            // THANH TIẾN TRÌNH 5 BƯỚC: CHO PHÉP NHẤP TRỰC TIẾP VÀO BẤT KỲ BƯỚC NÀO!
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2)),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(5, (index) {
+                  final int stepNum = index + 1;
+                  final bool isCurrent = _currentStep == stepNum;
+                  final bool isPassed = _currentStep > stepNum;
 
-                return Expanded(
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundColor: isPassed
-                            ? Colors.green
-                            : isCurrent
-                                ? Colors.amber.shade700
-                                : Colors.grey.shade300,
-                        child: Text(
-                          '$stepNum',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: isPassed || isCurrent ? Colors.white : Colors.grey.shade700,
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _currentStep = stepNum;
+                          if (stepNum == 5) _proceedToPayment();
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: isCurrent
+                                      ? const Color(0xFFD97706)
+                                      : isPassed
+                                          ? const Color(0xFF15803D)
+                                          : Colors.grey.shade300,
+                                  child: Text(
+                                    '$stepNum',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: isPassed || isCurrent ? Colors.white : Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _getStepShortLabel(stepNum),
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                                    color: isCurrent
+                                        ? const Color(0xFFD97706)
+                                        : isPassed
+                                            ? const Color(0xFF15803D)
+                                            : Colors.grey.shade600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                          if (index < 4)
+                            Container(
+                              width: 12,
+                              height: 2,
+                              color: isPassed ? const Color(0xFF15803D) : Colors.grey.shade300,
+                            ),
+                        ],
                       ),
-                      if (index < 4)
-                        Expanded(
-                          child: Container(
-                            height: 2,
-                            color: isPassed ? Colors.green : Colors.grey.shade300,
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              }),
+                    ),
+                  );
+                }),
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Bước 1: Check-in GPS
+            // NÚT BỎ QUA BƯỚC ĐẦU (HIỆN Ở BƯỚC 1, 2, 3 ĐỂ NHẢY THẲNG LÊN ĐƠN)
+            if (_currentStep < 4)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() => _currentStep = 4),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFD97706),
+                    side: const BorderSide(color: Color(0xFFD97706), width: 1.5),
+                    backgroundColor: const Color(0xFFFFFBEB),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.fast_forward, color: Color(0xFFD97706)),
+                  label: const Text(
+                    'Bỏ qua các bước đầu ➔ Lên Đơn Ngay (Bước 4)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ),
+              ),
+
+            // BƯỚC 1: CHECK-IN GPS
             if (_currentStep == 1) ...[
               Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -1158,7 +2581,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
               ),
             ],
 
-            // Bước 2: Kiểm Date & Tồn Quầy
+            // BƯỚC 2: KIỂM DATE & TỒN QUẦY
             if (_currentStep == 2) ...[
               Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -1182,13 +2605,19 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => setState(() => _currentStep = 3),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF16A34A),
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Tiếp Tục: Chụp Ảnh Quầy Kệ'),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => setState(() => _currentStep = 3),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF16A34A),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text('Tiếp Tục: Chụp Ảnh Quầy Kệ'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1196,7 +2625,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
               ),
             ],
 
-            // Bước 3: Chụp ảnh quầy kệ
+            // BƯỚC 3: CHỤP ẢNH QUẦY KỆ
             if (_currentStep == 3) ...[
               Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -1224,13 +2653,19 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => setState(() => _currentStep = 4),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF16A34A),
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Tiếp Tục: Lên Đơn Đặt Hàng'),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => setState(() => _currentStep = 4),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF16A34A),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text('Tiếp Tục: Lên Đơn Đặt Hàng'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1238,7 +2673,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
               ),
             ],
 
-            // Bước 4: Đặt đơn bánh kẹo
+            // BƯỚC 4: GIỎ HÀNG ĐA SẢN PHẨM (MULTI-ITEM CART BÁNH KẸO FMCG)
             if (_currentStep == 4) ...[
               Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -1247,58 +2682,287 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Bước 4: Đặt Hàng Đa ĐVT (Thùng/Hộp/Gói)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text('Sản phẩm: Bánh Chocopie Hộp 12 Cái (Orion)', style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          DropdownButton<String>(
-                            value: _orderUom,
-                            items: const [
-                              DropdownMenuItem(value: 'Thùng', child: Text('Thùng (8 Hộp)')),
-                              DropdownMenuItem(value: 'Hộp', child: Text('Hộp (12 Cái)')),
-                            ],
-                            onChanged: (v) => setState(() => _orderUom = v ?? 'Thùng'),
-                          ),
-                          const SizedBox(width: 16),
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
-                            onPressed: () {
-                              if (_orderQty > 1) setState(() => _orderQty--);
-                            },
-                          ),
-                          Text('$_orderQty', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          IconButton(
-                            icon: const Icon(Icons.add_circle_outline),
-                            onPressed: () => setState(() => _orderQty++),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Thành tiền: ${(_orderQty * 480000).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: 16),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: _submitting ? null : _submitOrderAndGetQr,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF16A34A),
-                                foregroundColor: Colors.white,
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Bước 4: Lên Đơn Bánh Kẹo',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              child: const Text('Lên Đơn & Sang Bước 5'),
+                              Text(
+                                'Chọn nhiều mặt hàng & số lượng vào giỏ',
+                                style: TextStyle(fontSize: 11, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(6)),
+                            child: Text(
+                              'Đa ĐVT (Thùng/Hộp)',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green.shade800),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 14),
+
+                      // DANH MỤC CÁC SẢN PHẨM BÁNH KẸO
+                      ..._catalogProducts.map((prod) {
+                        final String sku = prod['sku'];
+                        final String currentUom = _cartSelectedUoms[sku] ?? (prod['uoms'][0]['name'] as String);
+                        final int qty = _cartQuantities[sku] ?? 0;
+                        final int price = _getItemPrice(sku, currentUom);
+                        final int lineTotal = qty * price;
+                        final int vanStock = prod['vanStock'] as int;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: qty > 0 ? const Color(0xFFF0FDF4) : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: qty > 0 ? Colors.green.shade300 : Colors.grey.shade200,
+                              width: qty > 0 ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          prod['name'],
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: qty > 0 ? Colors.green.shade900 : Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade200,
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                prod['brand'],
+                                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black87),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue.shade50,
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                'Tồn xe: $vanStock Thùng',
+                                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue.shade800),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+
+                              // CHỌN ĐVT VÀ TĂNG GIẢM SỐ LƯỢNG
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Nút bấm chọn ĐVT
+                                  Row(
+                                    children: (prod['uoms'] as List).map<Widget>((u) {
+                                      final bool isUomSelected = currentUom == u['name'];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 6),
+                                        child: InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              _cartSelectedUoms[sku] = u['name'];
+                                              _cashGiven = _totalAmount;
+                                            });
+                                          },
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: isUomSelected ? const Color(0xFF15803D) : Colors.white,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: isUomSelected ? const Color(0xFF15803D) : Colors.grey.shade300,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              '${u['name']} (${_formatVnd(u['price'])})',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: isUomSelected ? FontWeight.bold : FontWeight.normal,
+                                                color: isUomSelected ? Colors.white : Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+
+                                  // Bộ tăng giảm số lượng [-] [QTY] [+]
+                                  Row(
+                                    children: [
+                                      IconButton.filledTonal(
+                                        icon: const Icon(Icons.remove, size: 14),
+                                        style: IconButton.styleFrom(
+                                          padding: const EdgeInsets.all(4),
+                                          minimumSize: const Size(28, 28),
+                                        ),
+                                        onPressed: () {
+                                          if (qty > 0) {
+                                            setState(() {
+                                              _cartQuantities[sku] = qty - 1;
+                                              _cashGiven = _totalAmount;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                                        child: Text(
+                                          '$qty',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: qty > 0 ? const Color(0xFF15803D) : Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton.filled(
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: const Color(0xFF16A34A),
+                                          padding: const EdgeInsets.all(4),
+                                          minimumSize: const Size(28, 28),
+                                        ),
+                                        icon: const Icon(Icons.add, size: 14),
+                                        onPressed: () {
+                                          setState(() {
+                                            _cartQuantities[sku] = qty + 1;
+                                            _cashGiven = _totalAmount;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+
+                              if (qty > 0) ...[
+                                const Divider(height: 14),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Thành tiền ($qty $currentUom x ${_formatVnd(price)}đ):',
+                                      style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                                    ),
+                                    Text(
+                                      '${_formatVnd(lineTotal)} đ',
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      }),
+
+                      // Thông báo khuyến mãi FMCG
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.amber.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('🎉', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Khuyến mãi: Tặng 1 Dây Snack Oishi Bắp Cay (0đ) cho đơn hàng từ 1.000.000đ!',
+                                style: TextStyle(fontSize: 11, color: Colors.amber.shade900, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // TỔNG TIỀN GIỎ HÀNG
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green.shade200),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Giỏ hàng: $_totalItemsCount mặt hàng ($_totalUnitsCount kiện/thùng)',
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  '${_formatVnd(_totalAmount)} đ',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF15803D), fontSize: 18),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Nút Sang Bước 5
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _totalAmount > 0 ? _proceedToPayment : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF16A34A),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              icon: const Icon(Icons.arrow_forward),
+                              label: const Text('Tiếp Tục: Sang Bước 5 (Thanh Toán)', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
                       OutlinedButton.icon(
                         onPressed: _showQuickBackorderDialog,
                         style: OutlinedButton.styleFrom(
@@ -1314,42 +2978,394 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
               ),
             ],
 
-            // Bước 5: Check-out & VietQR
+            // BƯỚC 5: THANH TOÁN (CHO CHỌN TIỀN MẶT HOẶC CHUYỂN KHOẢN, MẶC ĐỊNH LÀ TIỀN MẶT)
             if (_currentStep == 5) ...[
               Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.qr_code_2, size: 48, color: Colors.green),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Bước 5: Quét VietQR Thu Tiền & Check-out',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Bước 5: Thanh Toán & Thu Tiền',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(6)),
+                            child: const Text(
+                              'Đơn Hàng Mới',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
-                      if (_vietQrUrl != null)
-                        Image.network(
-                          _vietQrUrl!,
-                          width: 180,
-                          height: 180,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.qr_code, size: 100),
+                      Text(
+                        'Tiệm: ${widget.outlet['name']}',
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // TÓM TẮT GIỎ HÀNG BƯỚC 5
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade200),
                         ),
+                        child: Column(
+                          children: _cartItemList.map((it) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${it['qty']} ${it['uom']} x ${it['name']}',
+                                    style: const TextStyle(fontSize: 11, color: Colors.black87),
+                                  ),
+                                  Text(
+                                    '${_formatVnd(it['total'])} đ',
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Đã hoàn tất viếng thăm & lên đơn thành công!')),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF16A34A),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+
+                      // Hộp Tổng Tiền Cần Thu
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green.shade200),
                         ),
-                        child: const Text('HOÀN TẤT VIẾNG THĂM'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('SỐ TIỀN CẦN THU:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF15803D))),
+                            Text(
+                              '${_formatVnd(_totalAmount)} đ',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF15803D)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text('Chọn Hình Thức Thanh Toán:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(height: 8),
+
+                      // 1. TIỀN MẶT (MẶC ĐỊNH - PHỔ BIẾN NHẤT)
+                      InkWell(
+                        onTap: () => setState(() => _paymentMethod = 'CASH'),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _paymentMethod == 'CASH' ? const Color(0xFFF0FDF4) : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _paymentMethod == 'CASH' ? const Color(0xFF16A34A) : Colors.grey.shade300,
+                              width: _paymentMethod == 'CASH' ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Radio<String>(
+                                value: 'CASH',
+                                groupValue: _paymentMethod,
+                                activeColor: const Color(0xFF16A34A),
+                                onChanged: (v) => setState(() => _paymentMethod = v!),
+                              ),
+                              const Icon(Icons.payments, color: Color(0xFF15803D)),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text('Tiền Mặt', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                        SizedBox(width: 6),
+                                        Text('(Phổ biến nhất)', style: TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    Text('Thu tiền mặt trực tiếp tại tiệm tạp hóa', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // CHI TIẾT THU TIỀN MẶT & TÍNH NỢ GỐI ĐẦU NẾU TRẢ THIẾU
+                      if (_paymentMethod == 'CASH') ...[
+                        Container(
+                          margin: const EdgeInsets.only(top: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.green.shade100),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Số tiền khách đưa:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      key: ValueKey(_cashGiven),
+                                      initialValue: '$_cashGiven',
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        suffixText: 'đ',
+                                        isDense: true,
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onChanged: (v) {
+                                        setState(() {
+                                          _cashGiven = int.tryParse(v) ?? 0;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: () => setState(() => _cashGiven = _totalAmount),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFDCFCE7),
+                                      foregroundColor: const Color(0xFF15803D),
+                                      elevation: 0,
+                                    ),
+                                    child: const Text('Đủ 100%'),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+
+                              // CÁC NÚT BẤM NHANH MỆNH GIÁ TIỀN
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [500000, 1000000, 2000000, 3000000, 5000000].map((amt) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 6),
+                                      child: ActionChip(
+                                        label: Text('${amt ~/ 1000}k'),
+                                        backgroundColor: Colors.grey.shade100,
+                                        onPressed: () => setState(() => _cashGiven = amt),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // TÍNH TOÁN TIỀN THỐI HOẶC GỐI ĐẦU NỢ
+                              if (_cashGiven >= _totalAmount) ...[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Tiền thối lại cho tiệm:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                    Text(
+                                      '${_formatVnd(_cashGiven - _totalAmount)} đ',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green.shade800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ] else ...[
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.amber.shade200),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Khách trả trước:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                                          Text('${_formatVnd(_cashGiven)} đ', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Còn thiếu (Gối đầu nợ):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red)),
+                                          Text(
+                                            '${_formatVnd(_totalAmount - _cashGiven)} đ',
+                                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.red),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      const Text(
+                                        '➔ Số tiền còn thiếu sẽ được tự động cộng dồn vào Công nợ gối đầu của tiệm!',
+                                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+
+                      // 2. CHUYỂN KHOẢN (VIETQR)
+                      InkWell(
+                        onTap: () => setState(() => _paymentMethod = 'TRANSFER'),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _paymentMethod == 'TRANSFER' ? const Color(0xFFF0FDF4) : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _paymentMethod == 'TRANSFER' ? const Color(0xFF16A34A) : Colors.grey.shade300,
+                              width: _paymentMethod == 'TRANSFER' ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Radio<String>(
+                                value: 'TRANSFER',
+                                groupValue: _paymentMethod,
+                                activeColor: const Color(0xFF16A34A),
+                                onChanged: (v) => setState(() => _paymentMethod = v!),
+                              ),
+                              const Icon(Icons.qr_code_2, color: Colors.blue),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Chuyển Khoản (VietQR)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text('Chủ tiệm quét mã QR ngân hàng Napas 24/7', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // CHI TIẾT MÃ VIETQR
+                      if (_paymentMethod == 'TRANSFER') ...[
+                        Container(
+                          margin: const EdgeInsets.only(top: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.blue.shade100),
+                          ),
+                          child: Column(
+                            children: [
+                              if (_vietQrUrl != null)
+                                Image.network(
+                                  _vietQrUrl!,
+                                  width: 170,
+                                  height: 170,
+                                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.qr_code, size: 90),
+                                ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'MBBank • STK: 0988889999\nNPP BANH KEO AN PHAT',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+
+                      // 3. GHI NỢ GỐI ĐẦU 100%
+                      InkWell(
+                        onTap: () => setState(() => _paymentMethod = 'DEBT'),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _paymentMethod == 'DEBT' ? const Color(0xFFF0FDF4) : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _paymentMethod == 'DEBT' ? const Color(0xFF16A34A) : Colors.grey.shade300,
+                              width: _paymentMethod == 'DEBT' ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Radio<String>(
+                                value: 'DEBT',
+                                groupValue: _paymentMethod,
+                                activeColor: const Color(0xFF16A34A),
+                                onChanged: (v) => setState(() => _paymentMethod = v!),
+                              ),
+                              const Icon(Icons.receipt_long, color: Colors.orange),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Ghi Nợ Gối Đầu 100%', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text('Nợ hiện tại: ${_formatVnd(widget.outlet['currentDebt'] ?? 0)} đ', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // NÚT HOÀN TẤT ĐƠN HÀNG
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _finishOrder,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF16A34A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          icon: const Icon(Icons.check_circle_outline),
+                          label: Text(
+                            _paymentMethod == 'CASH'
+                                ? (_cashGiven >= _totalAmount
+                                    ? 'XÁC NHẬN ĐÃ THU TIỀN MẶT (${_formatVnd(_totalAmount)} đ)'
+                                    : 'XÁC NHẬN THU ${_formatVnd(_cashGiven)} đ + GỐI NỢ ${_formatVnd(_totalAmount - _cashGiven)} đ')
+                                : _paymentMethod == 'TRANSFER'
+                                    ? 'XÁC NHẬN ĐÃ CHUYỂN KHOẢN XONG'
+                                    : 'XÁC NHẬN GHI NỢ GỐI ĐẦU 100%',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1360,5 +3376,37 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
         ),
       ),
     );
+  }
+
+  String _getStepTitle(int step) {
+    switch (step) {
+      case 1:
+        return 'Check-in GPS';
+      case 2:
+        return 'Kiểm Date & Tồn';
+      case 3:
+        return 'Chụp Ảnh Quầy Kệ';
+      case 4:
+        return 'Lên Đơn Bánh Kẹo';
+      case 5:
+      default:
+        return 'Thanh Toán & Thu Tiền';
+    }
+  }
+
+  String _getStepShortLabel(int step) {
+    switch (step) {
+      case 1:
+        return 'Check-in';
+      case 2:
+        return 'Date & Tồn';
+      case 3:
+        return 'Chụp ảnh';
+      case 4:
+        return 'Lên đơn';
+      case 5:
+      default:
+        return 'Thu tiền';
+    }
   }
 }

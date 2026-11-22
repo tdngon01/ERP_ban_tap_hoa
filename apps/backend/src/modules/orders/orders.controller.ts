@@ -15,6 +15,16 @@ export class OrdersController {
     return this.ordersService.getPromotions();
   }
 
+  @Get('returns/history')
+  async getReturnHistory() {
+    return this.ordersService.getReturnHistory();
+  }
+
+  @Post('returns')
+  async createReturn(@Body() body: any) {
+    return this.ordersService.createReturnOrder(body);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);

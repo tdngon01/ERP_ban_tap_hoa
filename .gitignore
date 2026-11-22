@@ -10,6 +10,10 @@ lerna-debug.log*
 dist/
 build/
 out/
+.next/
+apps/web-next/.next/
+*.tsbuildinfo
+next-env.d.ts
 
 # Environment files (giữ bảo mật thông tin ngân hàng & api key)
 .env

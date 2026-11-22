@@ -21,6 +21,11 @@ export class SettingsController {
     return this.settingsService.createDatabaseBackup();
   }
 
+  @Get('database-info')
+  async getDatabaseInfo() {
+    return this.settingsService.getDatabaseInfo();
+  }
+
   @Get('backups')
   async listBackups() {
     return this.settingsService.listBackups();

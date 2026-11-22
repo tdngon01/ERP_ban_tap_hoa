@@ -13,6 +13,9 @@ import {
   RefreshCw,
   QrCode,
   AlertCircle,
+  Cloud,
+  ExternalLink,
+  Layers,
 } from 'lucide-react';
 import {
   getSystemSettings,
@@ -20,6 +23,7 @@ import {
   createBackup,
   getBackups,
   getCsvExportUrl,
+  getDatabaseInfo,
 } from '../api';
 
 export const SettingsPage: React.FC = () => {
@@ -29,6 +33,7 @@ export const SettingsPage: React.FC = () => {
   const [backups, setBackups] = useState<any[]>([]);
   const [backupLoading, setBackupLoading] = useState(false);
   const [backupMessage, setBackupMessage] = useState('');
+  const [dbInfo, setDbInfo] = useState<any>(null);
 
   const [form, setForm] = useState({
     distributorName: 'NHÀ PHÂN PHỐI BÁNH KẸO AN PHÁT',
@@ -45,10 +50,12 @@ export const SettingsPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [settingsData, backupList] = await Promise.all([
+      const [settingsData, backupList, dbInfoData] = await Promise.all([
         getSystemSettings(),
         getBackups(),
+        getDatabaseInfo().catch(() => null),
       ]);
+      setDbInfo(dbInfoData);
       if (settingsData && settingsData.distributorName) {
         setForm({
           distributorName: settingsData.distributorName || '',
@@ -381,6 +388,52 @@ export const SettingsPage: React.FC = () => {
               <p className="text-[10px] text-emerald-700 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 ✓ Quét bằng App ngân hàng để thử
               </p>
+            </div>
+          </div>
+
+          {/* Supabase Cloud Database Status Section */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3.5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div className="flex items-center space-x-2 text-slate-900">
+                <Cloud className="w-4 h-4 text-emerald-600" />
+                <h4 className="font-bold text-xs uppercase tracking-wide">Cơ Sở Dữ Liệu Đám Mây Supabase</h4>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                dbInfo?.isCloud
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-slate-100 text-slate-700'
+              }`}>
+                {dbInfo?.isCloud ? '● Đang Kết Nối Cloud' : '○ SQLite Nội Bộ'}
+              </span>
+            </div>
+
+            <div className="p-3 bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200/80 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600 font-medium">Hệ quản trị CSDL:</span>
+                <span className="font-bold text-slate-900">{dbInfo?.provider || 'Đang kiểm tra...'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600 font-medium">Chế độ hoạt động:</span>
+                <span className="font-semibold text-emerald-800">{dbInfo?.mode || 'Offline Localhost'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600 font-medium">Quy mô bảng FMCG:</span>
+                <span className="font-mono font-bold text-slate-800">15 bảng nghiệp vụ</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Dự án đã hỗ trợ 100% <strong>Supabase Cloud (PostgreSQL 15+)</strong> để đồng bộ dữ liệu trực tiếp với ứng dụng Mobile SFA ngoài thị trường (4G/5G).
+            </p>
+
+            <div className="pt-1 flex flex-col space-y-1.5 text-xs">
+              <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-mono text-slate-700">
+                Chạy file <strong>Chuyen_Doi_Sang_Supabase.bat</strong> để kích hoạt.
+              </div>
+              <div className="text-[11px] text-emerald-700 flex items-center space-x-1 font-semibold">
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Xem chi tiết: HUONG_DAN_KET_NOI_SUPABASE.md</span>
+              </div>
             </div>
           </div>
 

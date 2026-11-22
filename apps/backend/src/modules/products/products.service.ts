@@ -13,6 +13,7 @@ export class ProductsService {
         { name: { contains: search } },
         { code: { contains: search } },
         { brand: { contains: search } },
+        { barcode: { contains: search } },
       ];
     }
 

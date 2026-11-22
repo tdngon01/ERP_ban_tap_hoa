@@ -289,5 +289,20 @@ model BackorderReminder {
   product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
+// 16. Tài khoản & Phân quyền Người dùng (RBAC - Role Based Access Control)
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique // admin, ketoan, thukho, giamsat, sale01
+  password  String   @default("123456") // Mật khẩu đăng nhập (mặc định: 123456)
+  fullName  String   // "Nguyễn Văn Hùng", "Nguyễn Thu Hương", v.v.
+  role      String   @default("SALES_REP") // ADMIN, ACCOUNTANT, WAREHOUSE, SUPERVISOR, SALES_REP
+  phone     String?
+  email     String?
+  avatarUrl String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
 

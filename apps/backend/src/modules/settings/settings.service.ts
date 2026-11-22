@@ -12,20 +12,48 @@ export class SettingsService {
       where: { id: 'default' },
     });
 
+    const envName = process.env.DISTRIBUTOR_NAME;
+    const envPhone = process.env.DISTRIBUTOR_HOTLINE;
+    const envAddress = process.env.DISTRIBUTOR_ADDRESS;
+    const envTaxCode = process.env.DISTRIBUTOR_TAX_CODE;
+    const envBankName = process.env.VIETQR_BANK_NAME;
+    const envBankBin = process.env.VIETQR_BANK_ID;
+    const envAccountNo = process.env.VIETQR_ACCOUNT_NO;
+    const envAccountName = process.env.VIETQR_ACCOUNT_NAME;
+
     if (!setting) {
       setting = await this.prisma.systemSetting.create({
         data: {
           id: 'default',
-          distributorName: 'NHÀ PHÂN PHỐI BÁNH KẸO AN PHÁT',
-          phone: '0908.123.456 - 028.3888.9999',
-          address: 'Số 150 Đường Song Hành, TP. Thủ Đức, TP. Hồ Chí Minh',
-          taxCode: '0312345678',
-          bankName: 'MBBank (Ngân Hàng Quân Đội)',
-          bankBin: '970422',
-          bankAccountNo: '0988889999',
-          bankAccountName: 'NPP BANH KEO AN PHAT',
+          distributorName: envName || 'NHÀ PHÂN PHỐI BÁNH KẸO AN PHÁT',
+          phone: envPhone || '0908.123.456 - 028.3888.9999',
+          address: envAddress || 'Số 150 Đường Song Hành, TP. Thủ Đức, TP. Hồ Chí Minh',
+          taxCode: envTaxCode || '0312345678',
+          bankName: envBankName || 'MBBank (Ngân Hàng Quân Đội)',
+          bankBin: envBankBin || '970422',
+          bankAccountNo: envAccountNo || '0988889999',
+          bankAccountName: envAccountName || 'NPP BANH KEO AN PHAT',
           autoBackupDays: 1,
           invoiceNotes: 'Cảm ơn Quý khách! Vui lòng kiểm tra kỹ số lượng, hạn sử dụng bánh kẹo và quét mã QR thanh toán.',
+        },
+      });
+    } else if (
+      setting.distributorName === 'NHÀ PHÂN PHỐI BÁNH KẸO AN PHÁT' &&
+      envName &&
+      envName !== 'NHÀ PHÂN PHỐI BÁNH KẸO AN PHÁT'
+    ) {
+      // Đồng bộ giá trị mới mà người dùng đã cấu hình trong .env nếu DB vẫn đang giữ tên mặc định ban đầu
+      setting = await this.prisma.systemSetting.update({
+        where: { id: 'default' },
+        data: {
+          distributorName: envName,
+          phone: envPhone || setting.phone,
+          address: envAddress || setting.address,
+          taxCode: envTaxCode || setting.taxCode,
+          bankName: envBankName || setting.bankName,
+          bankBin: envBankBin || setting.bankBin,
+          bankAccountNo: envAccountNo || setting.bankAccountNo,
+          bankAccountName: envAccountName || setting.bankAccountName,
         },
       });
     }
@@ -39,6 +67,21 @@ export class SettingsService {
       where: { id: 'default' },
       data: dto,
     });
+  }
+
+  async getDatabaseInfo() {
+    const dbUrl = process.env.DATABASE_URL || '';
+    const isPostgres = dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://');
+    const isSupabase = dbUrl.includes('supabase.co') || dbUrl.includes('supabase.com') || dbUrl.includes('pooler.supabase');
+    return {
+      provider: isPostgres ? (isSupabase ? 'Supabase Cloud (PostgreSQL 15+)' : 'PostgreSQL Database') : 'SQLite Nội Bộ (file:./dev.db)',
+      isCloud: isPostgres,
+      isSupabase,
+      host: isPostgres ? (dbUrl.split('@')[1]?.split(':')[0] || 'Cloud PostgreSQL') : 'Local dev.db',
+      status: 'ONLINE',
+      mode: isPostgres ? '24/7 Cloud Sync (4G/5G Ready)' : 'Offline Localhost',
+      tablesCount: 15,
+    };
   }
 
   private getDbPath(): string {

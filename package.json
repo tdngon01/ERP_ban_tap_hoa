@@ -2,23 +2,24 @@
   "name": "erp-banhang-fmcg",
   "version": "1.0.0",
   "private": true,
-  "description": "Hệ thống ERP & DMS chuyên biệt cho Phân Phối Bánh Kẹo & Tạp Hóa (FMCG)",
+  "description": "Hệ thống Web ERP & DMS chuyên biệt cho Phân Phối Bánh Kẹo & Tạp Hóa (FMCG) - Next.js & Supabase",
   "workspaces": [
     "apps/*"
   ],
   "scripts": {
-    "start:backend": "cd apps/backend && npm run start:dev",
-    "start:web": "cd apps/web-admin && npm run dev",
-    "desktop": "cd apps/web-admin && npm run desktop",
-    "dev": "npm run start:backend",
-    "build": "npm run build --workspaces",
-    "seed": "cd apps/backend && npm run seed"
+    "dev": "cd apps/web-next && npm run dev",
+    "build": "cd apps/web-next && npm run build",
+    "start": "cd apps/web-next && npm run start",
+    "seed": "cd apps/web-next && npm run seed"
   },
   "keywords": [
     "erp",
     "dms",
     "fmcg",
     "confectionery",
+    "nextjs",
+    "supabase",
+    "vercel",
     "fefo",
     "vietqr",
     "google-sheets"
@@ -26,4 +27,3 @@
   "author": "Antigravity Team",
   "license": "MIT"
 }
-

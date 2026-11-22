@@ -1,18 +1,18 @@
-# Hệ Thống ERP & DMS Ngành Phân Phối Bánh Kẹo & Tạp Hóa (FMCG)
+# Hệ Thống Web ERP & DMS Ngành Phân Phối Bánh Kẹo & Tạp Hóa (FMCG)
+> **Kiến trúc Cloud-Native Hiện Đại:** Next.js 14 App Router (Fullstack Serverless) • Supabase (PostgreSQL) • Triển khai Vercel 0đ/tháng • Mobile Flutter SFA.
 
 Hệ thống chuyên biệt cho **Nhà Phân Phối (NPP)** và **Đội ngũ Sale Thị Trường (General Trade - GT)** với quy mô phân phối bánh kẹo, giải quyết triệt để 6 bài toán cốt lõi:
 1. **Đa đơn vị tính & Quy cách đóng gói linh hoạt**: Thùng -> Hộp/Dây/Lốc -> Gói/Thanh, tự động quy đổi và hạch toán tồn kho theo Đơn vị cơ sở (Base UoM).
 2. **Quản trị Lô & Hạn sử dụng theo FEFO (First Expired, First Out)**: Tự động đề xuất xuất hàng cận date trước, cảnh báo đỏ $\le 30$ ngày, tách biệt Tồn thực tế / Tồn giữ chỗ (Soft Reservation) / Tồn khả dụng.
 3. **Bộ máy Khuyến mãi & Chiết khấu phức tạp (Promotion Engine)**: Tự động kích hoạt Mua X tặng Y (hàng tặng đơn giá 0đ), chiết khấu theo giá trị đơn hàng.
-4. **Lịch trình tuyến MCP (Master Call Plan T2 - T7) & GPS Check-in**: Kiểm soát vị trí viếng thăm trong bán kính $\le 100\text{m}$, chống gian lận Fake GPS.
+4. **Lịch trình tuyến MCP (Master Call Plan T2 - T7) & GPS Check-in**: Tích hợp HTML5 Geolocation độ chính xác cao, kiểm soát vị trí viếng thăm trong bán kính $\le 100\text{m}$, chống gian lận.
 5. **Công nợ gối đầu & Sinh mã VietQR động**: Tự động sinh mã VietQR Napas kèm nội dung chuyển khoản để chủ tạp hóa quét thanh toán tức thì và tự động gạch nợ.
 6. **Đồng bộ hai chiều Google Sheets API**: Kết nối trực tiếp với bảng Google Sheets của Nhà phân phối, kéo sản phẩm & điểm bán về ERP, đẩy đơn hàng và tồn kho FEFO lên Google Sheet.
-
----
-
-7. **In Phiếu Giao Hàng & Hóa Đơn kèm mã VietQR**: Hỗ trợ in khổ A4/A5 hoặc máy in nhiệt; tự động sinh mã VietQR Napas với số tiền còn nợ và nội dung chuyển khoản để chủ tạp hóa quét thanh toán khi tài xế giao hàng.
+7. **In Phiếu Giao Hàng & Hóa Đơn kèm mã VietQR**: Hỗ trợ in khổ A4/A5 hoặc máy in nhiệt; tự động sinh mã VietQR Napas với số tiền còn nợ và nội dung chuyển khoản để chủ tạp hóa quét thanh toán.
 8. **Bảng Kê Soạn Hàng Tổng Cho Xe Tải (Consolidated Warehouse Picking List)**: Tự động gom toàn bộ đơn hàng trong ngày, bốc hàng theo chuẩn lô cận date FEFO, tiết kiệm thời gian gom hàng cho đội ngũ thủ kho.
-9. **Cài Đặt Hệ Thống, Sao Lưu CSDL 1-Click & Xuất Excel (UTF-8 BOM)**: Tùy biến thông tin NPP, tài khoản ngân hàng nhận tiền, sao lưu snapshot SQLite an toàn chỉ với 1 click, tải báo cáo định dạng CSV chuẩn tiếng Việt.
+9. **Cài Đặt Hệ Thống, Sao Lưu CSDL 1-Click & Xuất Excel (UTF-8 BOM)**: Tùy biến thông tin NPP, tài khoản ngân hàng nhận tiền, sao lưu an toàn chỉ với 1 click, tải báo cáo định dạng CSV chuẩn tiếng Việt.
+10. **Phân Quyền 5 Vai Trò (RBAC) & Bảo Mật OWASP**: Admin, Kế Toán, Thủ Kho, Giám Sát Tuyến, Sale Thị Trường. Mã hóa mật khẩu `scrypt` kèm random salt, JWT ký `HMAC-SHA256`, giới hạn thử đăng nhập (Rate Limit) và OWASP Security Headers (CSP, X-Frame-Options).
+11. **Cổng Bán Hàng SFA Thị Trường (Mobile Terminal)**: Tác nghiệp trực tiếp trên điện thoại: chụp ảnh quầy kệ thực tế có gắn Watermark GPS, kiểm tồn xe tải bán dạo (Van Sales), ghi nhận nợ hàng bổ sung (Backorders).
 
 ---
 
@@ -21,49 +21,20 @@ Hệ thống chuyên biệt cho **Nhà Phân Phối (NPP)** và **Đội ngũ Sa
 ```text
 ERP_BanHang/
 ├── apps/
-│   ├── backend/                 # Core API & Nghiệp vụ ERP (NestJS + Prisma + Google Sheets API)
+│   ├── web-next/                # Ứng Dụng Web Fullstack Production (Next.js 14 App Router + Tailwind + Prisma)
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma   # Schema CSDL 14 thực thể chuẩn hóa (kèm SystemSetting)
-│   │   │   └── seed.ts         # Dữ liệu mẫu Bánh kẹo VN (Chocopie, AFC, Custas, Oishi...)
+│   │   │   ├── schema.prisma   # Schema PostgreSQL / Supabase Transaction Pooler (Port 6543 & 5432)
+│   │   │   └── seed.ts         # Dữ liệu mẫu Bánh kẹo VN (Chocopie, AFC, Custas, Oishi...) & Tài khoản mẫu
 │   │   ├── src/
-│   │   │   ├── modules/
-│   │   │   │   ├── google-sheets/  # Tích hợp Google Sheets API v4
-│   │   │   │   ├── products/       # Đa đơn vị tính & Quy đổi ĐVT
-│   │   │   │   ├── inventory/      # Thuật toán FEFO, Quản lý Lô HSD & Soạn hàng xe tải (Picking List)
-│   │   │   │   ├── outlets/        # Điểm bán tạp hóa & Hạn mức nợ
-│   │   │   │   ├── routes/         # Tuyến MCP T2-T7 & Check-in GPS Haversine
-│   │   │   │   ├── orders/         # Khuyến mãi & Đơn Pre-sales / Van sales
-│   │   │   │   ├── debt/           # Sổ cái công nợ & Sinh VietQR động
-│   │   │   │   ├── dashboard/      # BI & Báo cáo điều hành
-│   │   │   │   └── settings/       # Cài đặt NPP, Sao lưu CSDL 1-click & Xuất CSV UTF-8
-│   │   │   ├── main.ts
-│   │   │   └── app.module.ts
-│   │   ├── package.json
-│   │   └── .env
-│   │
-│   ├── web-admin/               # Web Quản Trị NPP & Desktop App (React + Vite + Tailwind + Electron)
-│   │   ├── electron/
-│   │   │   ├── main.cjs        # Desktop launcher (Single Instance, khay hệ thống, chống mở lặp tab)
-│   │   │   └── preload.cjs
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   │   ├── InvoiceModal.tsx        # Phiếu Giao Hàng & Hóa Đơn in ấn kèm VietQR
-│   │   │   │   ├── Navbar.tsx
-│   │   │   │   └── Sidebar.tsx
-│   │   │   ├── pages/
-│   │   │   │   ├── DashboardPage.tsx       # Bảng điều hành KPI & Cảnh báo FEFO
-│   │   │   │   ├── ProductsPage.tsx        # Bánh kẹo & Bộ máy quy đổi ĐVT
-│   │   │   │   ├── InventoryFefoPage.tsx   # Kho bãi & Đề xuất bốc lô FEFO
-│   │   │   │   ├── PickingListPage.tsx     # Bảng kê soạn hàng xe tải tập trung
-│   │   │   │   ├── OutletsPage.tsx         # Điểm bán tạp hóa GT & Hạn mức nợ
-│   │   │   │   ├── RouteMcpPage.tsx        # Tuyến MCP & Giám sát vị trí Sale
-│   │   │   │   ├── OrdersPage.tsx          # Đơn hàng, Tách dòng Hàng bán/Tặng & In hóa đơn
-│   │   │   │   ├── DebtVietQrPage.tsx      # Sổ cái công nợ & Sinh mã VietQR
-│   │   │   │   ├── GoogleSheetsPage.tsx    # Trung tâm đồng bộ Google Sheets API
-│   │   │   │   ├── SettingsPage.tsx        # Cài đặt NPP, STK VietQR, Sao lưu DB & Xuất CSV
-│   │   │   │   └── MobileSfaSimulator.tsx  # Giả lập điện thoại Sale 5 bước viếng thăm
-│   │   │   ├── App.tsx
-│   │   │   └── main.tsx
+│   │   │   ├── app/
+│   │   │   │   ├── api/        # 54 Serverless REST API Routes (Auth, Inventory, Orders, MCP, VietQR...)
+│   │   │   │   ├── layout.tsx
+│   │   │   │   └── page.tsx    # SPA Router điều hướng 11 module nghiệp vụ
+│   │   │   ├── components/     # UI Components (Sidebar, Navbar, InteractiveRouteMap, InvoiceModal...)
+│   │   │   ├── pages-view/     # 11 Màn hình nghiệp vụ Web FMCG ERP
+│   │   │   ├── lib/            # Prisma Client, Supabase Client, Auth scrypt/JWT, Business Services
+│   │   │   └── middleware.ts   # OWASP Security Headers & CORS Policy
+│   │   ├── vercel.json         # Cấu hình Vercel Serverless (Region sin1 Singapore)
 │   │   └── package.json
 │   │
 │   └── mobile-flutter/          # Ứng Dụng Di Động SFA Độc Lập Cho Sale Thị Trường (Flutter)
@@ -73,71 +44,40 @@ ERP_BanHang/
 │       ├── pubspec.yaml
 │       └── README.md
 │
-├── Chay_App_Desktop.bat         # 1-Click khởi động Desktop App (0 đồng VPS)
-├── Tao_Shortcut_Desktop.bat     # Tạo lối tắt ra màn hình Desktop Windows
+├── HUONG_DAN_DEPLOY_VERCEL_SUPABASE.md # Cẩm nang hướng dẫn triển khai thực tế 0đ/tháng
+├── Chay_App_NextJS.bat          # 1-Click khởi động bản Web Next.js cục bộ (Port 3000)
 ├── package.json
 └── README.md
 ```
 
 ---
 
-## 🚀 Hướng Dẫn Khởi Chạy Dự Án
+## 🚀 Hướng Dẫn Khởi Chạy Nhanh (Local Development)
 
-### Bước 1: Khởi động Backend API (NestJS + Prisma)
+### Cách 1: Sử dụng file chạy nhanh (1-Click)
+Nhấp đúp chuột vào file:
+```text
+Chay_App_NextJS.bat
+```
+Trình duyệt sẽ tự động mở địa chỉ `http://localhost:3000`.
 
-Mở một cửa sổ Terminal (PowerShell):
+### Cách 2: Sử dụng dòng lệnh Terminal
 ```bash
-cd d:\ERP_BanHang\apps\backend
-
 # 1. Cài đặt các gói phụ thuộc
 npm install
 
-# 2. Khởi tạo cơ sở dữ liệu và nạp dữ liệu mẫu FMCG Bánh Kẹo
-npx prisma db push
-npm run seed
-
-# 3. Khởi động Backend API
-npm run start:dev
-```
-Backend API sẽ lắng nghe tại: `http://localhost:5000`
-
-### Bước 2: Khởi động Ứng Dụng Desktop (0 đồng VPS - 0 đồng Domain)
-
-Cách 1 (Nhanh nhất): Nhấp đúp chuột vào tệp tin **`Chay_App_Desktop.bat`** tại thư mục gốc `d:\ERP_BanHang`.
-Cửa sổ phần mềm Desktop ERP sẽ tự động mở lên trên màn hình máy tính của bạn!
-
-Cách 2: Chạy lệnh qua PowerShell:
-```bash
-npm run desktop
-```
-
-### Bước 3: Khởi động Web Quản Trị trên Trình Duyệt (Tùy chọn)
-
-Mở cửa sổ Terminal:
-```bash
-cd d:\ERP_BanHang\apps\web-admin
+# 2. Khởi chạy Web Next.js
 npm run dev
 ```
-Truy cập trình duyệt tại: `http://localhost:3000`
 
 ---
 
-## 📊 Hướng Dẫn Kết Nối Google Sheets API
+## 🌐 Hướng Dẫn Triển Khai Lên Vercel & Supabase (0đ/tháng)
 
-1. Truy cập tab **Đồng Bộ Google Sheets** trên Web Quản Trị ERP.
-2. Tạo một file Google Sheets trên Google Drive của bạn gồm 4 tab (Sheet):
-   - `SanPham`: Cột `Mã SKU`, `Tên Bánh Kẹo`, `Ngành Hàng`, `Thương Hiệu`, `ĐVT Cơ Sở`, `ĐVT Quy Cách`, `Hệ Số`, `Giá Bán`.
-   - `DiemBan`: Cột `Mã Điểm Bán`, `Tên Tạp Hóa`, `Chủ Tiệm`, `Số Điện Thoại`, `Địa Chỉ`, `GPS Lat`, `GPS Lng`, `Hạn Mức Nợ`.
-   - `DonHang`: Cột `Mã Đơn`, `Ngày Giờ`, `Tạp Hóa`, `Sale`, `Mặt Hàng`, `Tổng Tiền`, `Trạng Thái`.
-   - `TonKho`: Cột `Kho Hàng`, `Mã SKU`, `Tên Bánh`, `Số Lô`, `HSD`, `Số Ngày Còn Lại`, `FEFO`, `Tồn Khả Dụng`.
-3. Chia sẻ bảng tính (Share) ở quyền xem hoặc quyền chỉnh sửa.
-4. Copy mã **Spreadsheet ID** (chuỗi nằm giữa `/d/` và `/edit` trong URL) dán vào ô cấu hình và bấm **Lưu Cấu Hình**.
-5. Bấm các nút **Đồng Bộ Sản Phẩm**, **Đồng Bộ Điểm Bán**, hoặc **Đẩy Đơn Hàng / Báo Cáo FEFO** với 1 cú click!
+Toàn bộ quy trình triển khai chi tiết từng bước được hướng dẫn tại:
+👉 [HUONG_DAN_DEPLOY_VERCEL_SUPABASE.md](file:///d:/ERP_BanHang/HUONG_DAN_DEPLOY_VERCEL_SUPABASE.md)
 
----
-
-## 📱 Ứng Dụng Di Động Sale Thị Trường (Flutter)
-
-- Có sẵn **Màn hình Giả lập Mobile SFA** chạy trực tiếp trên Web Admin (`http://localhost:3000` &rarr; chọn mục *Giả Lập Mobile Sale SFA*).
-- Dự án Flutter Native độc lập nằm trong thư mục `apps/mobile-flutter`. Khi bạn cài đặt Flutter SDK, chỉ cần vào thư mục này chạy `flutter pub get` và `flutter run`.
-
+Tóm tắt 3 bước:
+1. **Supabase**: Tạo Project miễn phí tại [supabase.com](https://supabase.com), copy URL kết nối Transaction Pooler (Port 6543) và Session Pooler (Port 5432).
+2. **Push Schema CSDL**: Chạy `npx prisma db push` trong `apps/web-next` để tự động tạo toàn bộ bảng dữ liệu.
+3. **Vercel**: Import repository GitHub, chọn thư mục gốc `apps/web-next`, nhập các biến môi trường từ `.env.example` và nhấn **Deploy**.

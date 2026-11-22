@@ -7,7 +7,7 @@ export class GoogleSheetsController {
 
   @Get('config')
   async getConfig() {
-    return this.googleSheetsService.getConfig();
+    return this.googleSheetsService.getMaskedConfig();
   }
 
   @Post('config')
@@ -38,6 +38,21 @@ export class GoogleSheetsController {
   @Get('export/inventory')
   async exportInventory() {
     return this.googleSheetsService.exportInventoryToSheet();
+  }
+
+  @Get('export/products')
+  async exportProducts() {
+    return this.googleSheetsService.exportProductsToSheet();
+  }
+
+  @Get('export/outlets')
+  async exportOutlets() {
+    return this.googleSheetsService.exportOutletsToSheet();
+  }
+
+  @Post('backup-all')
+  async backupAll(@Body() body: { spreadsheetId?: string }) {
+    return this.googleSheetsService.backupAllToGoogleSheets(body?.spreadsheetId);
   }
 }
 

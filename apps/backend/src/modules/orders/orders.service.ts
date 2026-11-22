@@ -269,6 +269,95 @@ export class OrdersService {
     };
   }
 
+  /**
+   * THAM KHẢO PHẦN MỀM CHUYÊN NGHIỆP: Quản lý Đổi Trả Hàng & Thu Hồi Hàng Lỗi / Cận Date
+   * Tự động giảm trừ công nợ của tiệm và nhập kho hàng thu hồi
+   */
+  async createReturnOrder(data: {
+    outletId: string;
+    salesRepName?: string;
+    reason: string;
+    notes?: string;
+    items: Array<{
+      productId: string;
+      uomName: string;
+      quantity: number;
+      unitPrice: number;
+    }>;
+  }) {
+    const outlet = await this.prisma.outlet.findUnique({
+      where: { id: data.outletId },
+    });
+    if (!outlet) throw new NotFoundException('Không tìm thấy điểm bán / tiệm tạp hóa');
+
+    if (!data.items || data.items.length === 0) {
+      throw new BadRequestException('Vui lòng chọn ít nhất 1 sản phẩm cần đổi trả');
+    }
+
+    const returnTotal = data.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+    const returnCode = `RET-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(100 + Math.random() * 900)}`;
+
+    // 1. Giảm trừ công nợ tiệm
+    const prevDebt = outlet.currentDebt;
+    const newDebt = Math.max(0, prevDebt - returnTotal);
+    await this.prisma.outlet.update({
+      where: { id: data.outletId },
+      data: { currentDebt: newDebt },
+    });
+
+    // 2. Tạo phiếu ghi nhận công nợ giảm trừ (PaymentReceipt)
+    const receipt = await this.prisma.paymentReceipt.create({
+      data: {
+        receiptCode: returnCode,
+        outletId: data.outletId,
+        amount: returnTotal,
+        paymentMethod: 'RETURN_REFUND',
+        status: 'CONFIRMED_BY_ACCOUNTANT',
+        notes: `Phiếu đổi trả / thu hồi hàng lỗi: ${data.reason}. Giảm trừ công nợ từ ${prevDebt.toLocaleString('vi-VN')}đ xuống ${newDebt.toLocaleString('vi-VN')}đ. Ghi chú: ${data.notes || 'Không có'}`,
+      },
+    });
+
+    // 3. Ghi nhận dịch chuyển kho (StockMovement)
+    const targetWarehouse = (await this.prisma.warehouse.findFirst({
+      where: { type: 'PROMOTION' },
+    })) || (await this.prisma.warehouse.findFirst());
+
+    if (targetWarehouse) {
+      for (const item of data.items) {
+        await this.prisma.stockMovement.create({
+          data: {
+            warehouseId: targetWarehouse.id,
+            productId: item.productId,
+            batchCode: 'LOT-RETURNED',
+            type: data.reason.includes('date') ? 'RETURN_EXPIRED' : 'ADJUSTMENT_DAMAGE',
+            quantity: item.quantity,
+            uomName: item.uomName,
+            refOrderCode: returnCode,
+            notes: `Thu hồi từ ${outlet.name} (${outlet.code}) - ${data.reason}`,
+          },
+        });
+      }
+    }
+
+    return {
+      success: true,
+      returnCode,
+      returnTotal,
+      prevDebt,
+      newDebt,
+      receipt,
+      message: `Đã tạo phiếu trả hàng ${returnCode} và giảm trừ ${(returnTotal).toLocaleString('vi-VN')}đ công nợ cho tiệm ${outlet.name}!`,
+    };
+  }
+
+  async getReturnHistory() {
+    return this.prisma.paymentReceipt.findMany({
+      where: { paymentMethod: 'RETURN_REFUND' },
+      include: { outlet: true },
+      orderBy: { receiptDate: 'desc' },
+    });
+  }
+
   async updateStatus(id: string, status: string) {
     return this.prisma.salesOrder.update({
       where: { id },

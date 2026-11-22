@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, Inject } from '@nestjs/common';
 import { RoutesService } from './routes.service';
 
 @Controller('api/routes')
@@ -8,6 +8,31 @@ export class RoutesController {
   @Get()
   async findAll() {
     return this.routesService.findAll();
+  }
+
+  @Post()
+  async createRoute(@Body() body: {
+    code?: string;
+    name: string;
+    dayOfWeek: string;
+    salesRepName?: string;
+  }) {
+    return this.routesService.createRoute(body);
+  }
+
+  @Put(':id')
+  async updateRoute(@Param('id') id: string, @Body() body: any) {
+    return this.routesService.updateRoute(id, body);
+  }
+
+  @Delete(':id')
+  async deleteRoute(@Param('id') id: string) {
+    return this.routesService.deleteRoute(id);
+  }
+
+  @Post(':id/assign-outlets')
+  async assignOutlets(@Param('id') id: string, @Body() body: { outletIds: string[] }) {
+    return this.routesService.assignOutletsToRoute(id, body.outletIds || []);
   }
 
   @Get('mcp/today')

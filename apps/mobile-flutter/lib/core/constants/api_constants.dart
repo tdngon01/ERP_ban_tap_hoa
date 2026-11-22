@@ -4,6 +4,8 @@ class ApiConstants {
   static const String baseUrl = 'http://10.0.2.2:5000/api';
 
   static const String todayMcpEndpoint = '$baseUrl/routes/mcp/today';
+  static const String routesEndpoint = '$baseUrl/routes';
+  static const String outletsEndpoint = '$baseUrl/outlets';
   static const String checkInEndpoint = '$baseUrl/routes/checkin';
   static const String checkOutEndpoint = '$baseUrl/routes/checkout';
   static const String productsEndpoint = '$baseUrl/products';

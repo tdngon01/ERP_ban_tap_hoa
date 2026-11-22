@@ -9,9 +9,19 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  // Cho phép kết nối từ Web Admin và Mobile SFA
+  // Cấu hình CORS bảo mật: chỉ cho phép các domain tin cậy từ .env
+  const rawCors = process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173';
+  const allowedOrigins = rawCors.split(',').map((o) => o.trim());
+
   app.enableCors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Cho phép request từ cùng máy (no origin) hoặc nằm trong danh sách được cấp phép
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Bị chặn bởi chính sách CORS: ${origin}`));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
